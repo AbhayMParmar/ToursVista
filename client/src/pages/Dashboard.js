@@ -1081,10 +1081,6 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             ⭐ Rate
           </button>
         </div>
-        {/* Mobile Click Hint */}
-        <div className="mobile-click-hint">
-          Tap anywhere on card to view details
-        </div>
       </div>
     </div>
   );
