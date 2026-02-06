@@ -265,3 +265,126 @@ exports.getToursByCategory = async (req, res) => {
     });
   }
 };
+
+// Add rating to a tour
+exports.rateTour = async (req, res) => {
+  try {
+    const { tourId } = req.params;
+    const { userId, rating, review } = req.body;
+
+    const tour = await Tour.findById(tourId);
+    if (!tour) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tour not found'
+      });
+    }
+
+    // Check if user already rated
+    const existingRatingIndex = tour.ratings.findIndex(r => r.userId.toString() === userId);
+    
+    if (existingRatingIndex !== -1) {
+      // Update existing rating
+      tour.ratings[existingRatingIndex].rating = rating;
+      tour.ratings[existingRatingIndex].review = review || '';
+      tour.ratings[existingRatingIndex].date = Date.now();
+    } else {
+      // Add new rating
+      tour.ratings.push({
+        userId,
+        rating,
+        review: review || '',
+        date: Date.now()
+      });
+    }
+
+    // Calculate new average rating
+    const totalRatings = tour.ratings.length;
+    const sumRatings = tour.ratings.reduce((sum, r) => sum + r.rating, 0);
+    tour.averageRating = totalRatings > 0 ? sumRatings / totalRatings : 0;
+    tour.totalRatings = totalRatings;
+
+    await tour.save();
+
+    res.status(200).json({
+      success: true,
+      message: existingRatingIndex !== -1 ? 'Rating updated successfully' : 'Rating added successfully',
+      data: {
+        averageRating: tour.averageRating,
+        totalRatings: tour.totalRatings,
+        rating: {
+          userId,
+          rating,
+          review,
+          date: new Date()
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error rating tour:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error rating tour',
+      error: error.message
+    });
+  }
+};
+
+// Get all ratings for a tour
+exports.getTourRatings = async (req, res) => {
+  try {
+    const { tourId } = req.params;
+
+    const tour = await Tour.findById(tourId)
+      .populate('ratings.userId', 'name email')
+      .select('ratings');
+
+    if (!tour) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tour not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: tour.ratings
+    });
+  } catch (error) {
+    console.error('Error getting tour ratings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting tour ratings',
+      error: error.message
+    });
+  }
+};
+
+// Get user's rating for a tour
+exports.getUserRating = async (req, res) => {
+  try {
+    const { tourId, userId } = req.params;
+
+    const tour = await Tour.findById(tourId);
+    if (!tour) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tour not found'
+      });
+    }
+
+    const userRating = tour.ratings.find(r => r.userId.toString() === userId);
+
+    res.status(200).json({
+      success: true,
+      data: userRating || null
+    });
+  } catch (error) {
+    console.error('Error getting user rating:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting user rating',
+      error: error.message
+    });
+  }
+};

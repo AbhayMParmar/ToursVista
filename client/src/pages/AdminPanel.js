@@ -764,7 +764,7 @@ const UsersManagement = () => {
   );
 };
 
-// Tours Management Component - FIXED with improved popup
+// Tours Management Component - UPDATED with enhanced form
 const ToursManagement = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -775,11 +775,62 @@ const ToursManagement = () => {
   const [tourForm, setTourForm] = useState({
     title: '',
     description: '',
+    detailedDescription: '',
     price: '',
     duration: '',
     image: '',
+    images: [''],
     region: 'north',
-    type: 'heritage'
+    category: 'heritage',
+    destination: '',
+    
+    // Overview
+    overview: {
+      highlights: [''],
+      groupSize: '2-10',
+      difficulty: 'easy',
+      ageRange: '18-65',
+      bestSeason: 'October to March',
+      languages: ['English', 'Hindi']
+    },
+    
+    // Included/Excluded
+    included: [''],
+    excluded: [''],
+    
+    // Itinerary
+    itinerary: [{
+      day: 1,
+      title: '',
+      description: '',
+      activities: [''],
+      meals: 'Breakfast, Lunch, Dinner',
+      accommodation: 'Hotel'
+    }],
+    
+    // Requirements
+    requirements: {
+      physicalLevel: 'Moderate',
+      fitnessLevel: 'Average',
+      documents: ['Valid ID Proof'],
+      packingList: ['Comfortable shoes', 'Sun protection']
+    },
+    
+    // Pricing
+    pricing: {
+      basePrice: '',
+      discounts: [{ name: '', percentage: 0, description: '' }],
+      paymentPolicy: '50% advance payment required',
+      cancellationPolicy: 'Free cancellation 15 days before tour'
+    },
+    
+    // Important Info
+    importantInfo: {
+      bookingCutoff: '7 days before tour date',
+      refundPolicy: 'Full refund for cancellations 15 days prior',
+      healthAdvisory: 'Consult doctor if you have health issues',
+      safetyMeasures: 'All safety protocols followed'
+    }
   });
   const tableContainerRef = useRef(null);
 
@@ -803,17 +854,60 @@ const ToursManagement = () => {
   const handleSaveTour = async (e) => {
     e.preventDefault();
     
+    // Prepare tour data
     const tourData = {
       title: tourForm.title,
       description: tourForm.description,
+      detailedDescription: tourForm.detailedDescription,
       price: parseInt(tourForm.price) || 0,
       duration: tourForm.duration,
       image: tourForm.image,
+      images: tourForm.images.filter(img => img.trim() !== ''),
       region: tourForm.region,
-      type: tourForm.type,
-      destination: tourForm.region === 'north' ? 'North India' : 
-                  tourForm.region === 'south' ? 'South India' :
-                  tourForm.region === 'west' ? 'West India' : 'East India'
+      category: tourForm.category,
+      destination: tourForm.destination || `${tourForm.region} India`,
+      
+      overview: {
+        highlights: tourForm.overview.highlights.filter(h => h.trim() !== ''),
+        groupSize: tourForm.overview.groupSize,
+        difficulty: tourForm.overview.difficulty,
+        ageRange: tourForm.overview.ageRange,
+        bestSeason: tourForm.overview.bestSeason,
+        languages: tourForm.overview.languages.filter(l => l.trim() !== '')
+      },
+      
+      included: tourForm.included.filter(i => i.trim() !== ''),
+      excluded: tourForm.excluded.filter(e => e.trim() !== ''),
+      
+      itinerary: tourForm.itinerary.map(item => ({
+        day: item.day || 1,
+        title: item.title || `Day ${item.day}`,
+        description: item.description || '',
+        activities: item.activities.filter(a => a.trim() !== ''),
+        meals: item.meals || 'Breakfast',
+        accommodation: item.accommodation || 'Hotel'
+      })),
+      
+      requirements: {
+        physicalLevel: tourForm.requirements.physicalLevel,
+        fitnessLevel: tourForm.requirements.fitnessLevel,
+        documents: tourForm.requirements.documents.filter(d => d.trim() !== ''),
+        packingList: tourForm.requirements.packingList.filter(p => p.trim() !== '')
+      },
+      
+      pricing: {
+        basePrice: parseInt(tourForm.pricing.basePrice) || parseInt(tourForm.price) || 0,
+        discounts: tourForm.pricing.discounts.filter(d => d.name.trim() !== ''),
+        paymentPolicy: tourForm.pricing.paymentPolicy,
+        cancellationPolicy: tourForm.pricing.cancellationPolicy
+      },
+      
+      importantInfo: {
+        bookingCutoff: tourForm.importantInfo.bookingCutoff,
+        refundPolicy: tourForm.importantInfo.refundPolicy,
+        healthAdvisory: tourForm.importantInfo.healthAdvisory,
+        safetyMeasures: tourForm.importantInfo.safetyMeasures
+      }
     };
 
     try {
@@ -838,11 +932,56 @@ const ToursManagement = () => {
       setTourForm({
         title: '',
         description: '',
+        detailedDescription: '',
         price: '',
         duration: '',
         image: '',
+        images: [''],
         region: 'north',
-        type: 'heritage'
+        category: 'heritage',
+        destination: '',
+        
+        overview: {
+          highlights: [''],
+          groupSize: '2-10',
+          difficulty: 'easy',
+          ageRange: '18-65',
+          bestSeason: 'October to March',
+          languages: ['English', 'Hindi']
+        },
+        
+        included: [''],
+        excluded: [''],
+        
+        itinerary: [{
+          day: 1,
+          title: '',
+          description: '',
+          activities: [''],
+          meals: 'Breakfast, Lunch, Dinner',
+          accommodation: 'Hotel'
+        }],
+        
+        requirements: {
+          physicalLevel: 'Moderate',
+          fitnessLevel: 'Average',
+          documents: ['Valid ID Proof'],
+          packingList: ['Comfortable shoes', 'Sun protection']
+        },
+        
+        pricing: {
+          basePrice: '',
+          discounts: [{ name: '', percentage: 0, description: '' }],
+          paymentPolicy: '50% advance payment required',
+          cancellationPolicy: 'Free cancellation 15 days before tour'
+        },
+        
+        importantInfo: {
+          bookingCutoff: '7 days before tour date',
+          refundPolicy: 'Full refund for cancellations 15 days prior',
+          healthAdvisory: 'Consult doctor if you have health issues',
+          safetyMeasures: 'All safety protocols followed'
+        }
       });
     } catch (error) {
       console.error('Error saving tour:', error);
@@ -858,13 +997,58 @@ const ToursManagement = () => {
   const handleEditTour = (tour) => {
     setEditingTour(tour);
     setTourForm({
-      title: tour.title,
-      description: tour.description,
-      price: tour.price.toString(),
-      duration: tour.duration,
-      image: tour.image,
+      title: tour.title || '',
+      description: tour.description || '',
+      detailedDescription: tour.detailedDescription || '',
+      price: tour.price?.toString() || '',
+      duration: tour.duration || '',
+      image: tour.image || '',
+      images: tour.images?.length > 0 ? tour.images : [''],
       region: tour.region || 'north',
-      type: tour.type || tour.category || 'heritage'
+      category: tour.category || 'heritage',
+      destination: tour.destination || '',
+      
+      overview: tour.overview || {
+        highlights: [''],
+        groupSize: '2-10',
+        difficulty: 'easy',
+        ageRange: '18-65',
+        bestSeason: 'October to March',
+        languages: ['English', 'Hindi']
+      },
+      
+      included: tour.included?.length > 0 ? tour.included : [''],
+      excluded: tour.excluded?.length > 0 ? tour.excluded : [''],
+      
+      itinerary: tour.itinerary?.length > 0 ? tour.itinerary : [{
+        day: 1,
+        title: '',
+        description: '',
+        activities: [''],
+        meals: 'Breakfast, Lunch, Dinner',
+        accommodation: 'Hotel'
+      }],
+      
+      requirements: tour.requirements || {
+        physicalLevel: 'Moderate',
+        fitnessLevel: 'Average',
+        documents: ['Valid ID Proof'],
+        packingList: ['Comfortable shoes', 'Sun protection']
+      },
+      
+      pricing: tour.pricing || {
+        basePrice: tour.price?.toString() || '',
+        discounts: [{ name: '', percentage: 0, description: '' }],
+        paymentPolicy: '50% advance payment required',
+        cancellationPolicy: 'Free cancellation 15 days before tour'
+      },
+      
+      importantInfo: tour.importantInfo || {
+        bookingCutoff: '7 days before tour date',
+        refundPolicy: 'Full refund for cancellations 15 days prior',
+        healthAdvisory: 'Consult doctor if you have health issues',
+        safetyMeasures: 'All safety protocols followed'
+      }
     });
     setShowAddModal(true);
   };
@@ -890,8 +1074,98 @@ const ToursManagement = () => {
       case 'beach': return '🏖️';
       case 'wellness': return '🧘';
       case 'cultural': return '🎭';
+      case 'spiritual': return '🕉️';
       default: return '🏔️';
     }
+  };
+
+  // Helper functions for dynamic arrays
+  const addArrayItem = (field, parent = null) => {
+    setTourForm(prev => {
+      if (parent) {
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [field]: [...prev[parent][field], '']
+          }
+        };
+      }
+      return {
+        ...prev,
+        [field]: [...prev[field], '']
+      };
+    });
+  };
+
+  const removeArrayItem = (field, index, parent = null) => {
+    setTourForm(prev => {
+      if (parent) {
+        const newArray = [...prev[parent][field]];
+        newArray.splice(index, 1);
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [field]: newArray
+          }
+        };
+      }
+      const newArray = [...prev[field]];
+      newArray.splice(index, 1);
+      return {
+        ...prev,
+        [field]: newArray
+      };
+    });
+  };
+
+  const updateArrayItem = (field, index, value, parent = null) => {
+    setTourForm(prev => {
+      if (parent) {
+        const newArray = [...prev[parent][field]];
+        newArray[index] = value;
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [field]: newArray
+          }
+        };
+      }
+      const newArray = [...prev[field]];
+      newArray[index] = value;
+      return {
+        ...prev,
+        [field]: newArray
+      };
+    });
+  };
+
+  // Itinerary helpers
+  const addItineraryDay = () => {
+    const newDay = tourForm.itinerary.length + 1;
+    setTourForm(prev => ({
+      ...prev,
+      itinerary: [
+        ...prev.itinerary,
+        {
+          day: newDay,
+          title: '',
+          description: '',
+          activities: [''],
+          meals: 'Breakfast',
+          accommodation: 'Hotel'
+        }
+      ]
+    }));
+  };
+
+  const removeItineraryDay = (index) => {
+    setTourForm(prev => ({
+      ...prev,
+      itinerary: prev.itinerary.filter((_, i) => i !== index).map((item, i) => ({ ...item, day: i + 1 }))
+    }));
   };
 
   return (
@@ -908,11 +1182,56 @@ const ToursManagement = () => {
             setTourForm({
               title: '',
               description: '',
+              detailedDescription: '',
               price: '',
               duration: '',
               image: '',
+              images: [''],
               region: 'north',
-              type: 'heritage'
+              category: 'heritage',
+              destination: '',
+              
+              overview: {
+                highlights: [''],
+                groupSize: '2-10',
+                difficulty: 'easy',
+                ageRange: '18-65',
+                bestSeason: 'October to March',
+                languages: ['English', 'Hindi']
+              },
+              
+              included: [''],
+              excluded: [''],
+              
+              itinerary: [{
+                day: 1,
+                title: '',
+                description: '',
+                activities: [''],
+                meals: 'Breakfast, Lunch, Dinner',
+                accommodation: 'Hotel'
+              }],
+              
+              requirements: {
+                physicalLevel: 'Moderate',
+                fitnessLevel: 'Average',
+                documents: ['Valid ID Proof'],
+                packingList: ['Comfortable shoes', 'Sun protection']
+              },
+              
+              pricing: {
+                basePrice: '',
+                discounts: [{ name: '', percentage: 0, description: '' }],
+                paymentPolicy: '50% advance payment required',
+                cancellationPolicy: 'Free cancellation 15 days before tour'
+              },
+              
+              importantInfo: {
+                bookingCutoff: '7 days before tour date',
+                refundPolicy: 'Full refund for cancellations 15 days prior',
+                healthAdvisory: 'Consult doctor if you have health issues',
+                safetyMeasures: 'All safety protocols followed'
+              }
             });
             setShowAddModal(true);
           }}
@@ -941,6 +1260,7 @@ const ToursManagement = () => {
                     <th>Duration</th>
                     <th>Type</th>
                     <th>Region</th>
+                    <th>Rating</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -961,13 +1281,22 @@ const ToursManagement = () => {
                         />
                       </td>
                       <td>{tour.title}</td>
-                      <td>₹{tour.price.toLocaleString('en-IN')}</td>
+                      <td>₹{tour.price?.toLocaleString('en-IN')}</td>
                       <td>{tour.duration}</td>
                       <td>
-                        <span className="tour-type">{tour.type || tour.category}</span>
+                        <span className="tour-type">{tour.category || tour.type}</span>
                       </td>
                       <td>
                         <span className="tour-region">{tour.region}</span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ color: '#FF9966' }}>★</span>
+                          <span>{tour.averageRating?.toFixed(1) || '0.0'}</span>
+                          <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                            ({tour.totalRatings || 0})
+                          </span>
+                        </div>
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="action-buttons">
@@ -1010,6 +1339,7 @@ const ToursManagement = () => {
                   <th>Duration</th>
                   <th>Type</th>
                   <th>Region</th>
+                  <th>Rating</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -1030,13 +1360,22 @@ const ToursManagement = () => {
                       />
                     </td>
                     <td>{tour.title}</td>
-                    <td>₹{tour.price.toLocaleString('en-IN')}</td>
+                    <td>₹{tour.price?.toLocaleString('en-IN')}</td>
                     <td>{tour.duration}</td>
                     <td>
-                      <span className="tour-type">{tour.type || tour.category}</span>
+                      <span className="tour-type">{tour.category || tour.type}</span>
                     </td>
                     <td>
                       <span className="tour-region">{tour.region}</span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ color: '#FF9966' }}>★</span>
+                        <span>{tour.averageRating?.toFixed(1) || '0.0'}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                          ({tour.totalRatings || 0})
+                        </span>
+                      </div>
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <div className="action-buttons">
@@ -1071,7 +1410,7 @@ const ToursManagement = () => {
       {/* Tour Details Modal */}
       {showTourDetails && selectedTour && (
         <div className="modal-overlay" onClick={() => setShowTourDetails(false)}>
-          <div className="modal-content medium-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Tour Details</h2>
               <button 
@@ -1088,75 +1427,148 @@ const ToursManagement = () => {
             <div className="details-container">
               <div className="profile-section">
                 <div className="profile-avatar-large" style={{background: 'linear-gradient(135deg, #4A90E2, #357ABD)'}}>
-                  {getTourTypeIcon(selectedTour.type || selectedTour.category)}
+                  {getTourTypeIcon(selectedTour.category)}
                 </div>
                 <div className="profile-info">
                   <h3>{selectedTour.title}</h3>
                   <p>{selectedTour.description?.substring(0, 100)}...</p>
                   <p>Tour ID: {selectedTour._id.slice(0, 12)}...</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: '#FF9966', fontSize: '1.2rem' }}>★</span>
+                      <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        {selectedTour.averageRating?.toFixed(1) || '0.0'}
+                      </span>
+                      <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                        ({selectedTour.totalRatings || 0} ratings)
+                      </span>
+                    </div>
+                    <span className="tour-type">{selectedTour.category}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="stats-cards">
+                <div className="stat-card" style={{background: 'linear-gradient(135deg, #2E8B57, #1a5c3a)'}}>
+                  <h4>Price</h4>
+                  <p className="stat-number">₹{selectedTour.price?.toLocaleString('en-IN')}</p>
+                </div>
+                <div className="stat-card" style={{background: 'linear-gradient(135deg, #6c5ce7, #4834d4)'}}>
+                  <h4>Duration</h4>
+                  <p className="stat-number">{selectedTour.duration}</p>
+                </div>
+                <div className="stat-card" style={{background: 'linear-gradient(135deg, #00b894, #00a085)'}}>
+                  <h4>Group Size</h4>
+                  <p className="stat-number">{selectedTour.overview?.groupSize || '2-10'}</p>
+                </div>
+                <div className="stat-card" style={{background: 'linear-gradient(135deg, #fdcb6e, #f9a825)'}}>
+                  <h4>Status</h4>
+                  <p className="stat-badge active">Active</p>
                 </div>
               </div>
               
               <div className="details-grid">
                 <div className="detail-card">
-                  <h3><i>💰</i> Pricing & Duration</h3>
-                  <div className="detail-row">
-                    <span className="detail-label">Price</span>
-                    <span className="detail-value amount">₹{selectedTour.price.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Duration</span>
-                    <span className="detail-value">{selectedTour.duration}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Type</span>
-                    <span className="detail-value badge tour-type">{selectedTour.type || selectedTour.category}</span>
-                  </div>
-                </div>
-                
-                <div className="detail-card">
-                  <h3><i>📍</i> Location & Region</h3>
+                  <h3><i>📍</i> Location & Details</h3>
                   <div className="detail-row">
                     <span className="detail-label">Region</span>
                     <span className="detail-value">{selectedTour.region}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Destination</span>
-                    <span className="detail-value">{selectedTour.destination || selectedTour.region === 'north' ? 'North India' : 
-                      selectedTour.region === 'south' ? 'South India' :
-                      selectedTour.region === 'west' ? 'West India' : 'East India'}</span>
+                    <span className="detail-value">{selectedTour.destination}</span>
                   </div>
                   <div className="detail-row">
-                    <span className="detail-label">Status</span>
-                    <span className="detail-value badge stat-badge active">Active</span>
+                    <span className="detail-label">Best Season</span>
+                    <span className="detail-value">{selectedTour.overview?.bestSeason}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Languages</span>
+                    <span className="detail-value">
+                      {selectedTour.overview?.languages?.join(', ') || 'English, Hindi'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="detail-card">
+                  <h3><i>🎯</i> Tour Overview</h3>
+                  <div className="detail-row">
+                    <span className="detail-label">Difficulty</span>
+                    <span className="detail-value">{selectedTour.overview?.difficulty}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Age Range</span>
+                    <span className="detail-value">{selectedTour.overview?.ageRange}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Max Participants</span>
+                    <span className="detail-value">{selectedTour.maxParticipants}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Current Bookings</span>
+                    <span className="detail-value">{selectedTour.currentParticipants}</span>
                   </div>
                 </div>
               </div>
               
               <div className="detail-card">
-                <h3><i>📝</i> Description</h3>
-                <p style={{color: '#666', lineHeight: '1.6', margin: '0'}}>
-                  {selectedTour.description}
+                <h3><i>📝</i> Detailed Description</h3>
+                <p style={{color: '#666', lineHeight: '1.6', margin: '0', whiteSpace: 'pre-line'}}>
+                  {selectedTour.detailedDescription || selectedTour.description}
                 </p>
               </div>
               
+              {/* Tour Highlights */}
+              {selectedTour.overview?.highlights && selectedTour.overview.highlights.length > 0 && (
+                <div className="detail-card">
+                  <h3><i>✨</i> Tour Highlights</h3>
+                  <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+                    {selectedTour.overview.highlights.map((highlight, index) => (
+                      <li key={index} style={{ marginBottom: '0.5rem', color: '#666' }}>
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               <div className="detail-card">
-                <h3><i>🖼️</i> Tour Image</h3>
-                <div style={{textAlign: 'center', marginTop: '1rem'}}>
-                  <img 
-                    src={selectedTour.image} 
-                    alt={selectedTour.title}
-                    style={{
-                      width: '100%',
-                      maxWidth: '400px',
-                      height: 'auto',
-                      borderRadius: '8px',
-                      border: '1px solid #eee'
-                    }}
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/400x250?text=Tour+Image';
-                    }}
-                  />
+                <h3><i>🖼️</i> Tour Images</h3>
+                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', padding: '1rem 0' }}>
+                  {selectedTour.images && selectedTour.images.length > 0 ? (
+                    selectedTour.images.map((img, index) => (
+                      <img 
+                        key={index}
+                        src={img} 
+                        alt={`${selectedTour.title} ${index + 1}`}
+                        style={{
+                          width: '150px',
+                          height: '100px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid #eee'
+                        }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/150x100?text=Tour+Image';
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <img 
+                      src={selectedTour.image} 
+                      alt={selectedTour.title}
+                      style={{
+                        width: '100%',
+                        maxWidth: '400px',
+                        height: 'auto',
+                        borderRadius: '8px',
+                        border: '1px solid #eee'
+                      }}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/400x250?text=Tour+Image';
+                      }}
+                    />
+                  )}
                 </div>
               </div>
               
@@ -1197,10 +1609,10 @@ const ToursManagement = () => {
         </div>
       )}
       
-      {/* Add/Edit Tour Modal */}
+      {/* Add/Edit Tour Modal - ENHANCED */}
       {showAddModal && (
         <div className="modal-overlay">
-          <div className="modal-content large-modal">
+          <div className="modal-content large-modal" style={{ maxWidth: '900px', maxHeight: '90vh' }}>
             <div className="modal-header">
               <h2>{editingTour ? 'Edit Tour' : 'Add New Tour'}</h2>
               <button 
@@ -1215,90 +1627,537 @@ const ToursManagement = () => {
             </div>
             
             <form onSubmit={handleSaveTour} className="tour-form">
-              <div className="form-group">
-                <label>Tour Title *</label>
-                <input
-                  type="text"
-                  value={tourForm.title}
-                  onChange={(e) => setTourForm({...tourForm, title: e.target.value})}
-                  required
-                  placeholder="Enter tour title"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Description *</label>
-                <textarea
-                  value={tourForm.description}
-                  onChange={(e) => setTourForm({...tourForm, description: e.target.value})}
-                  required
-                  placeholder="Enter tour description"
-                  rows="3"
-                />
-              </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Price (INR) *</label>
-                  <input
-                    type="number"
-                    value={tourForm.price}
-                    onChange={(e) => setTourForm({...tourForm, price: e.target.value})}
-                    required
-                    placeholder="Enter price"
-                    min="0"
-                  />
+              <div style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem' }}>
+                {/* Basic Information */}
+                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#2E8B57' }}>Basic Information</h3>
+                  <div className="form-group">
+                    <label>Tour Title *</label>
+                    <input
+                      type="text"
+                      value={tourForm.title}
+                      onChange={(e) => setTourForm({...tourForm, title: e.target.value})}
+                      required
+                      placeholder="Enter tour title"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Short Description *</label>
+                    <textarea
+                      value={tourForm.description}
+                      onChange={(e) => setTourForm({...tourForm, description: e.target.value})}
+                      required
+                      placeholder="Enter short description (for cards)"
+                      rows="3"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Detailed Description</label>
+                    <textarea
+                      value={tourForm.detailedDescription}
+                      onChange={(e) => setTourForm({...tourForm, detailedDescription: e.target.value})}
+                      placeholder="Enter detailed description (for tour page)"
+                      rows="5"
+                    />
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Price (INR) *</label>
+                      <input
+                        type="number"
+                        value={tourForm.price}
+                        onChange={(e) => setTourForm({...tourForm, price: e.target.value})}
+                        required
+                        placeholder="Enter price"
+                        min="0"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Duration *</label>
+                      <input
+                        type="text"
+                        value={tourForm.duration}
+                        onChange={(e) => setTourForm({...tourForm, duration: e.target.value})}
+                        required
+                        placeholder="e.g., 7 days"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Region</label>
+                      <select
+                        value={tourForm.region}
+                        onChange={(e) => setTourForm({...tourForm, region: e.target.value})}
+                      >
+                        <option value="north">North India</option>
+                        <option value="south">South India</option>
+                        <option value="west">West India</option>
+                        <option value="east">East India</option>
+                        <option value="central">Central India</option>
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Category</label>
+                      <select
+                        value={tourForm.category}
+                        onChange={(e) => setTourForm({...tourForm, category: e.target.value})}
+                      >
+                        <option value="heritage">Heritage</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="beach">Beach</option>
+                        <option value="wellness">Wellness</option>
+                        <option value="cultural">Cultural</option>
+                        <option value="spiritual">Spiritual</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Main Image URL *</label>
+                    <input
+                      type="url"
+                      value={tourForm.image}
+                      onChange={(e) => setTourForm({...tourForm, image: e.target.value})}
+                      required
+                      placeholder="Enter main image URL"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Additional Image URLs</label>
+                    {tourForm.images.map((img, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <input
+                          type="url"
+                          value={img}
+                          onChange={(e) => {
+                            const newImages = [...tourForm.images];
+                            newImages[index] = e.target.value;
+                            setTourForm({...tourForm, images: newImages});
+                          }}
+                          placeholder="Enter image URL"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem('images', index)}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addArrayItem('images')}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: '#2E8B57',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '0.5rem'
+                      }}
+                    >
+                      + Add Image
+                    </button>
+                  </div>
                 </div>
                 
-                <div className="form-group">
-                  <label>Duration *</label>
-                  <input
-                    type="text"
-                    value={tourForm.duration}
-                    onChange={(e) => setTourForm({...tourForm, duration: e.target.value})}
-                    required
-                    placeholder="e.g., 7 days"
-                  />
-                </div>
-              </div>
-              
-              <div className="form-group">
-                <label>Image URL *</label>
-                <input
-                  type="url"
-                  value={tourForm.image}
-                  onChange={(e) => setTourForm({...tourForm, image: e.target.value})}
-                  required
-                  placeholder="Enter image URL"
-                />
-              </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Region</label>
-                  <select
-                    value={tourForm.region}
-                    onChange={(e) => setTourForm({...tourForm, region: e.target.value})}
-                  >
-                    <option value="north">North India</option>
-                    <option value="south">South India</option>
-                    <option value="west">West India</option>
-                    <option value="east">East India</option>
-                  </select>
+                {/* Tour Overview */}
+                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#2E8B57' }}>Tour Overview</h3>
+                  
+                  <div className="form-group">
+                    <label>Tour Highlights</label>
+                    {tourForm.overview.highlights.map((highlight, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <input
+                          type="text"
+                          value={highlight}
+                          onChange={(e) => updateArrayItem('highlights', index, e.target.value, 'overview')}
+                          placeholder="Enter tour highlight"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem('highlights', index, 'overview')}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addArrayItem('highlights', 'overview')}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: '#2E8B57',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '0.5rem'
+                      }}
+                    >
+                      + Add Highlight
+                    </button>
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Group Size</label>
+                      <input
+                        type="text"
+                        value={tourForm.overview.groupSize}
+                        onChange={(e) => setTourForm({
+                          ...tourForm,
+                          overview: {...tourForm.overview, groupSize: e.target.value}
+                        })}
+                        placeholder="e.g., 2-10 People"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Difficulty</label>
+                      <select
+                        value={tourForm.overview.difficulty}
+                        onChange={(e) => setTourForm({
+                          ...tourForm,
+                          overview: {...tourForm.overview, difficulty: e.target.value}
+                        })}
+                      >
+                        <option value="easy">Easy</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="difficult">Difficult</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Age Range</label>
+                      <input
+                        type="text"
+                        value={tourForm.overview.ageRange}
+                        onChange={(e) => setTourForm({
+                          ...tourForm,
+                          overview: {...tourForm.overview, ageRange: e.target.value}
+                        })}
+                        placeholder="e.g., 18-65 years"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Best Season</label>
+                      <input
+                        type="text"
+                        value={tourForm.overview.bestSeason}
+                        onChange={(e) => setTourForm({
+                          ...tourForm,
+                          overview: {...tourForm.overview, bestSeason: e.target.value}
+                        })}
+                        placeholder="e.g., October to March"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Languages (comma separated)</label>
+                    <input
+                      type="text"
+                      value={tourForm.overview.languages.join(', ')}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        overview: {...tourForm.overview, languages: e.target.value.split(',').map(l => l.trim())}
+                      })}
+                      placeholder="e.g., English, Hindi, Local Language"
+                    />
+                  </div>
                 </div>
                 
-                <div className="form-group">
-                  <label>Type</label>
-                  <select
-                    value={tourForm.type}
-                    onChange={(e) => setTourForm({...tourForm, type: e.target.value})}
-                  >
-                    <option value="heritage">Heritage</option>
-                    <option value="adventure">Adventure</option>
-                    <option value="beach">Beach</option>
-                    <option value="wellness">Wellness</option>
-                    <option value="cultural">Cultural</option>
-                  </select>
+                {/* Included/Excluded Services */}
+                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#2E8B57' }}>Services</h3>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Included Services</label>
+                      {tourForm.included.map((item, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => updateArrayItem('included', index, e.target.value)}
+                            placeholder="e.g., Accommodation for all nights"
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeArrayItem('included', index)}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              background: '#dc3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addArrayItem('included')}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#2E8B57',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '5px',
+                          cursor: 'pointer',
+                          marginTop: '0.5rem'
+                        }}
+                      >
+                        + Add Inclusion
+                      </button>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Excluded Services</label>
+                      {tourForm.excluded.map((item, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => updateArrayItem('excluded', index, e.target.value)}
+                            placeholder="e.g., International flights"
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeArrayItem('excluded', index)}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              background: '#dc3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addArrayItem('excluded')}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#2E8B57',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '5px',
+                          cursor: 'pointer',
+                          marginTop: '0.5rem'
+                        }}
+                      >
+                        + Add Exclusion
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Itinerary */}
+                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ color: '#2E8B57', margin: 0 }}>Itinerary</h3>
+                    <button
+                      type="button"
+                      onClick={addItineraryDay}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: '#2E8B57',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      + Add Day
+                    </button>
+                  </div>
+                  
+                  {tourForm.itinerary.map((day, index) => (
+                    <div key={index} style={{ 
+                      background: '#f8f9fa', 
+                      padding: '1rem', 
+                      borderRadius: '8px', 
+                      marginBottom: '1rem',
+                      border: '1px solid #eee'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h4 style={{ margin: 0, color: '#2E8B57' }}>Day {day.day}</h4>
+                        {tourForm.itinerary.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeItineraryDay(index)}
+                            style={{
+                              padding: '0.25rem 0.75rem',
+                              background: '#dc3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            Remove Day
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>Day Title</label>
+                        <input
+                          type="text"
+                          value={day.title}
+                          onChange={(e) => {
+                            const newItinerary = [...tourForm.itinerary];
+                            newItinerary[index].title = e.target.value;
+                            setTourForm({...tourForm, itinerary: newItinerary});
+                          }}
+                          placeholder="e.g., Arrival & Orientation"
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>Day Description</label>
+                        <textarea
+                          value={day.description}
+                          onChange={(e) => {
+                            const newItinerary = [...tourForm.itinerary];
+                            newItinerary[index].description = e.target.value;
+                            setTourForm({...tourForm, itinerary: newItinerary});
+                          }}
+                          placeholder="Describe the day's activities"
+                          rows="3"
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>Activities</label>
+                        {day.activities.map((activity, activityIndex) => (
+                          <div key={activityIndex} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <input
+                              type="text"
+                              value={activity}
+                              onChange={(e) => {
+                                const newItinerary = [...tourForm.itinerary];
+                                newItinerary[index].activities[activityIndex] = e.target.value;
+                                setTourForm({...tourForm, itinerary: newItinerary});
+                              }}
+                              placeholder="e.g., Arrival at destination airport"
+                              style={{ flex: 1 }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newItinerary = [...tourForm.itinerary];
+                                newItinerary[index].activities.splice(activityIndex, 1);
+                                setTourForm({...tourForm, itinerary: newItinerary});
+                              }}
+                              style={{
+                                padding: '0.5rem 1rem',
+                                background: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newItinerary = [...tourForm.itinerary];
+                            newItinerary[index].activities.push('');
+                            setTourForm({...tourForm, itinerary: newItinerary});
+                          }}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#2E8B57',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            marginTop: '0.5rem'
+                          }}
+                        >
+                          + Add Activity
+                        </button>
+                      </div>
+                      
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Meals Included</label>
+                          <input
+                            type="text"
+                            value={day.meals}
+                            onChange={(e) => {
+                              const newItinerary = [...tourForm.itinerary];
+                              newItinerary[index].meals = e.target.value;
+                              setTourForm({...tourForm, itinerary: newItinerary});
+                            }}
+                            placeholder="e.g., Breakfast, Lunch, Dinner"
+                          />
+                        </div>
+                        
+                        <div className="form-group">
+                          <label>Accommodation</label>
+                          <input
+                            type="text"
+                            value={day.accommodation}
+                            onChange={(e) => {
+                              const newItinerary = [...tourForm.itinerary];
+                              newItinerary[index].accommodation = e.target.value;
+                              setTourForm({...tourForm, itinerary: newItinerary});
+                            }}
+                            placeholder="e.g., Hotel or Resort"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
               
