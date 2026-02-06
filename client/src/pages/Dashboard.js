@@ -993,7 +993,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component with ENHANCED CLICK FUNCTIONALITY
+// Tour Card Component with CLICK FUNCTIONALITY - NO VIEW DETAILS BUTTON
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -1019,17 +1019,10 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
     // Don't trigger if clicking on action buttons or links
     if (e.target.closest('.btn-book-now') || 
         e.target.closest('.btn-save') || 
-        e.target.closest('.btn-details') ||
         e.target.closest('.tour-price')) {
       return;
     }
     
-    e.preventDefault();
-    e.stopPropagation();
-    onViewDetails(tour._id);
-  };
-
-  const handleDetailsClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     onViewDetails(tour._id);
@@ -1088,40 +1081,8 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             ⭐ Rate
           </button>
         </div>
-        
-        {/* Enhanced View Details Link */}
-        <div style={{ 
-          marginTop: '1rem', 
-          paddingTop: '1rem', 
-          borderTop: '1px solid #FFE5CC',
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
-          <button 
-            className="btn-details"
-            onClick={handleDetailsClick}
-            style={{ 
-              width: '100%',
-              padding: '0.8rem',
-              background: isHovered ? '#FFE5CC' : '#FFFAF5',
-              borderColor: isHovered ? '#FF9966' : '#FFE5CC'
-            }}
-          >
-            <span style={{ marginRight: '0.5rem' }}>🔍</span>
-            View Full Details
-          </button>
-        </div>
-        {/* Click Hint for Mobile */}
-        <div className="mobile-click-hint" style={{
-          display: 'none',
-          textAlign: 'center',
-          marginTop: '0.5rem',
-          fontSize: '0.8rem',
-          color: '#666',
-          padding: '0.5rem',
-          background: '#FFFAF5',
-          borderRadius: '5px'
-        }}>
+        {/* Mobile Click Hint */}
+        <div className="mobile-click-hint">
           Tap anywhere on card to view details
         </div>
       </div>
