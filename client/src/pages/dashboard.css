@@ -1092,7 +1092,7 @@
   margin-bottom: 3rem;
 }
 
-/* TOUR CARD */
+/* TOUR CARD - UPDATED FOR CLICK FUNCTIONALITY */
 .tour-card {
   background: #FFFFFF;
   border-radius: 15px;
@@ -1103,7 +1103,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 550px;
+  min-height: 500px;
   cursor: pointer;
   position: relative;
 }
@@ -1151,7 +1151,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 330px;
+  min-height: 280px;
 }
 
 .tour-content h3 {
@@ -1185,7 +1185,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #FFE5CC;
   flex-shrink: 0;
 }
 
@@ -1197,31 +1199,6 @@
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
-}
-
-.btn-details {
-  background: #FFFAF5;
-  color: #333333;
-  padding: 0.7rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  border: 2px solid #FFE5CC;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  text-align: center;
-  display: inline-block;
-  width: 100%;
-}
-
-.btn-details:hover {
-  background: #FFE5CC;
-  color: #333333;
-  border-color: #FF9966;
-  text-decoration: none;
 }
 
 /* Mobile click hint */
@@ -1884,7 +1861,7 @@
   margin-top: auto;
 }
 
-/* ENHANCED TOUR DETAIL PAGE STYLES */
+/* ENHANCED TOUR DETAIL PAGE STYLES - UPDATED FOR MOBILE */
 .tour-detail-page {
   padding: 0 !important;
   border: none !important;
@@ -2441,7 +2418,6 @@
 
 .tour-card .btn-book-now,
 .tour-card .btn-save,
-.tour-card .btn-details,
 .tour-card .tour-price {
   pointer-events: auto;
 }
@@ -2498,6 +2474,10 @@
   .saved-tours-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+  }
+  
+  .tour-content {
+    min-height: 300px;
   }
 }
 
@@ -2621,6 +2601,13 @@
   
   .mobile-click-hint {
     display: block;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #666;
+    padding: 0.5rem;
+    background: #FFFAF5;
+    border-radius: 5px;
   }
   
   .tour-booking-actions {
@@ -3104,6 +3091,12 @@
   
   .booking-summary h4 {
     font-size: 1.1rem;
+  }
+  
+  /* Mobile click hint always visible on small screens */
+  .mobile-click-hint {
+    display: block;
+    background: rgba(255, 153, 102, 0.1);
   }
 }
 
