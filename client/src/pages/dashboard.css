@@ -7,17 +7,17 @@
   color: #333333;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
-  padding-top: 70px; /* Add padding to account for fixed navbar */
+  padding-top: 70px;
 }
 
 /* Hide scrollbars globally but keep functionality */
 * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
 }
 
 /* FIXED NAVBAR */
@@ -96,8 +96,8 @@
 
 /* Style the number input specifically */
 .booking-form-group input[type="number"] {
-  padding-right: 50px !important; /* Make room for controls */
-  -moz-appearance: textfield; /* Hide default number spinners in Firefox */
+  padding-right: 50px !important;
+  -moz-appearance: textfield;
 }
 
 .booking-form-group input[type="number"]::-webkit-outer-spin-button,
@@ -242,7 +242,7 @@
   flex-direction: column;
 }
 
-/* Mobile Welcome Message - MOVED TO MIDDLE */
+/* Mobile Welcome Message */
 .mobile-welcome-message {
   padding: 1rem 0;
   text-align: center;
@@ -357,20 +357,19 @@
   transform: translateY(0);
 }
 
-/* HERO SECTION - Replaces slider section */
+/* HERO SECTION */
 .hero-section {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-              url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-     background-size: cover;
-    background-position: center;
-    color: white;
-       padding: 6rem 0rem;
-    text-align: center;
-    position: relative;
-    margin-bottom: 3rem;
-    border-radius: 0px;
-    margin-top: 0rem;
-    overflow: hidden;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 6rem 0rem;
+  text-align: center;
+  position: relative;
+  margin-bottom: 3rem;
+  border-radius: 0px;
+  margin-top: 0rem;
+  overflow: hidden;
 }
 
 .hero-content {
@@ -484,7 +483,7 @@
   line-height: 1.6;
 }
 
-/* Updated Start Exploring Button */
+/* Start Exploring Button */
 .btn-explore {
   background: #2E8B57;
   color: white;
@@ -509,7 +508,7 @@
   transform: translateY(-2px);
 }
 
-/* IMPROVED BOOKING MODAL STYLES - HIDDEN SCROLLBARS */
+/* IMPROVED BOOKING MODAL STYLES */
 .booking-modal-overlay {
   position: fixed;
   top: 0;
@@ -537,7 +536,7 @@
   border-radius: 20px;
   padding: 0;
   width: 95%;
-  max-width: 850px; /* INCREASED from 800px to 850px */
+  max-width: 850px;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
   position: relative;
   animation: modalSlideIn 0.3s ease-out;
@@ -603,7 +602,7 @@
 }
 
 .modal-content {
-  padding: 2rem; /* INCREASED padding for better spacing */
+  padding: 2rem;
   flex: 1;
   overflow-y: auto;
   -ms-overflow-style: none;
@@ -617,7 +616,7 @@
 .booking-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; /* INCREASED gap for better spacing */
+  gap: 1.5rem;
   min-height: 100%;
 }
 
@@ -686,9 +685,9 @@
 
 .booking-summary {
   background: #FFFAF5;
-  padding: 1.5rem; /* INCREASED padding */
+  padding: 1.5rem;
   border-radius: 10px;
-  margin: 1.5rem 0; /* INCREASED margin */
+  margin: 1.5rem 0;
   border: 1px solid #FFE5CC;
   flex-shrink: 0;
 }
@@ -774,7 +773,7 @@
   border-color: #FF9966;
 }
 
-/* TOAST NOTIFICATION FOR BOOKING SUCCESS */
+/* TOAST NOTIFICATION */
 .booking-toast {
   position: fixed;
   bottom: 2rem;
@@ -842,7 +841,7 @@
   opacity: 1;
 }
 
-/* TOUR BOOKING CARD STYLES - UPDATED FOR MOBILE */
+/* TOUR BOOKING CARD STYLES */
 .tour-booking-actions {
   display: flex;
   gap: 1rem;
@@ -910,6 +909,26 @@
   max-width: 1200px;
   margin: 0 auto 4rem;
   padding: 0 2rem;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+}
+
+.section-header h2 {
+  color: #333333;
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF9966, #FFCC99);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-header p {
+  color: #666666;
+  font-size: 1.1rem;
 }
 
 .saved-tours-grid {
@@ -1059,7 +1078,7 @@
   display: none;
 }
 
-/* Featured Tours - Updated */
+/* Featured Tours */
 .featured-tours {
   max-width: 1200px;
   margin: 0 auto 4rem;
@@ -1073,7 +1092,7 @@
   margin-bottom: 3rem;
 }
 
-/* TOUR CARD - IMPROVED FOR MOBILE */
+/* TOUR CARD */
 .tour-card {
   background: #FFFFFF;
   border-radius: 15px;
@@ -1084,7 +1103,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 500px; /* Ensure consistent height */
+  min-height: 550px;
+  cursor: pointer;
+  position: relative;
 }
 
 .tour-card:hover {
@@ -1122,6 +1143,7 @@
   font-weight: bold;
   font-size: 1.1rem;
   box-shadow: 0 4px 6px rgba(46, 139, 87, 0.2);
+  z-index: 2;
 }
 
 .tour-content {
@@ -1129,7 +1151,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 280px; /* Ensure content area has minimum height */
+  min-height: 330px;
 }
 
 .tour-content h3 {
@@ -1192,6 +1214,7 @@
   white-space: nowrap;
   text-align: center;
   display: inline-block;
+  width: 100%;
 }
 
 .btn-details:hover {
@@ -1199,6 +1222,18 @@
   color: #333333;
   border-color: #FF9966;
   text-decoration: none;
+}
+
+/* Mobile click hint */
+.mobile-click-hint {
+  display: none;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+  padding: 0.5rem;
+  background: #FFFAF5;
+  border-radius: 5px;
 }
 
 /* USER STATS */
@@ -1265,7 +1300,7 @@
   font-weight: bold;
   color: #2E8B57;
   margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stat-label {
@@ -1385,7 +1420,7 @@
 .footer-bottom {
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(0,0,0,0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
   color: #666666;
   font-size: 0.9rem;
 }
@@ -1423,11 +1458,13 @@
   height: 50px;
   animation: spin 1s linear infinite;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-container p {
@@ -1436,7 +1473,7 @@
   font-weight: 500;
 }
 
-/* Page Content (for subpages) */
+/* Page Content */
 .page-content {
   background: #FFFFFF;
   padding: 2.5rem;
@@ -1658,7 +1695,63 @@
   margin-bottom: 1.5rem;
 }
 
-/* Edit Profile Modal - HIDDEN SCROLLBARS */
+/* Status Tabs */
+.status-tabs {
+  display: flex;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.status-tab {
+  padding: 0.8rem 1.5rem;
+  background: #FFFAF5;
+  border: 1px solid #FFE5CC;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-tab:hover {
+  background: #FFE5CC;
+  color: #333;
+}
+
+.status-tab.active {
+  background: #2E8B57;
+  color: white;
+  border-color: #2E8B57;
+}
+
+.tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+/* Empty filter results */
+.empty-filter-results {
+  text-align: center;
+  padding: 3rem;
+  background: #FFFAF5;
+  border-radius: 15px;
+  border: 2px dashed #FFE5CC;
+  grid-column: 1 / -1;
+}
+
+.empty-filter-icon {
+  font-size: 4rem;
+  color: #FFE5CC;
+  margin-bottom: 1.5rem;
+}
+
+/* Edit Profile Modal */
 .edit-profile-modal-overlay {
   position: fixed;
   top: 0;
@@ -1791,7 +1884,7 @@
   margin-top: auto;
 }
 
-/* ENHANCED TOUR DETAIL PAGE STYLES - MOBILE OPTIMIZED */
+/* ENHANCED TOUR DETAIL PAGE STYLES */
 .tour-detail-page {
   padding: 0 !important;
   border: none !important;
@@ -1828,7 +1921,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
   padding: 2rem;
   color: white;
   backdrop-filter: blur(2px);
@@ -1839,11 +1932,11 @@
   margin-bottom: 0.5rem !important;
   font-size: 2.5rem !important;
   font-weight: 800 !important;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
 }
 
 .tour-detail-subtitle {
-  color: rgba(255,255,255,0.9) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
   font-size: 1.2rem !important;
   margin: 0 !important;
 }
@@ -1858,14 +1951,14 @@
   border-radius: 12px;
   font-weight: bold;
   font-size: 1.8rem;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
   z-index: 10;
   transition: all 0.3s ease;
 }
 
 .tour-detail-price:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
 .tour-detail-content {
@@ -2315,7 +2408,45 @@
   box-shadow: 0 8px 16px rgba(255, 153, 102, 0.1);
 }
 
-/* Mobile Responsive Styles for Tour Detail Page */
+/* Star Rating Styles */
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.rating-stars {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rating-number {
+  font-weight: bold;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.rating-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Ensure pointer events work correctly */
+.tour-card * {
+  pointer-events: none;
+}
+
+.tour-card .btn-book-now,
+.tour-card .btn-save,
+.tour-card .btn-details,
+.tour-card .tour-price {
+  pointer-events: auto;
+}
+
+/* RESPONSIVE MEDIA QUERIES */
 @media (max-width: 1024px) {
   .tour-detail-content {
     grid-template-columns: 1fr;
@@ -2362,6 +2493,12 @@
     font-size: 1.2rem;
     padding: 1.2rem 2.5rem;
   }
+  
+  .tours-grid,
+  .saved-tours-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2374,13 +2511,11 @@
     height: 70px;
   }
   
-  /* Hide desktop menu and user info on mobile */
   .navbar-menu,
   .navbar-user {
     display: none;
   }
   
-  /* Show mobile menu button */
   .mobile-menu-btn {
     display: block;
   }
@@ -2389,7 +2524,6 @@
     flex: 1;
   }
   
-  /* Improved mobile number input */
   .number-input-controls {
     right: 5px;
   }
@@ -2452,7 +2586,6 @@
     gap: 1.5rem;
   }
   
-  /* Improved mobile tour cards */
   .tour-card {
     min-height: auto;
     margin-bottom: 1rem;
@@ -2486,6 +2619,10 @@
     padding: 0.5rem 1rem;
   }
   
+  .mobile-click-hint {
+    display: block;
+  }
+  
   .tour-booking-actions {
     flex-direction: row;
     flex-wrap: wrap;
@@ -2501,7 +2638,6 @@
     flex: 1;
   }
   
-  /* TOUR DETAIL MOBILE OPTIMIZATION */
   .tour-detail-hero {
     height: 280px;
   }
@@ -2632,10 +2768,6 @@
     font-size: 1.6rem;
   }
   
-  .section-header h2 {
-    font-size: 1.8rem;
-  }
-  
   .stats-card {
     padding: 1.5rem;
   }
@@ -2657,7 +2789,6 @@
     font-size: 1.8rem;
   }
   
-  /* Mobile menu adjustments */
   .mobile-menu-sidebar {
     width: 280px;
   }
@@ -2722,7 +2853,6 @@
     font-size: 0.8rem;
   }
   
-  /* Further improved mobile number input */
   .number-input-controls {
     right: 3px;
   }
@@ -2744,11 +2874,6 @@
     font-size: 1.5rem;
   }
   
-  .section-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  /* Further improved mobile tour cards */
   .tour-card {
     margin: 0.5rem 0;
   }
@@ -2793,7 +2918,6 @@
     min-width: 100%;
   }
   
-  /* TOUR DETAIL SMALL MOBILE OPTIMIZATION */
   .tour-detail-hero {
     height: 220px;
   }
@@ -2873,15 +2997,11 @@
     font-size: 1.1rem;
   }
   
-  .region-card,
-  .experience-card,
   .stats-card,
   .page-content {
     padding: 1.2rem;
   }
   
-  .regions-grid,
-  .experiences-grid,
   .tours-grid {
     gap: 1.2rem;
   }
@@ -2965,7 +3085,6 @@
     padding: 1rem;
   }
   
-  /* Mobile form improvements */
   .booking-form-group label {
     font-size: 1rem;
     margin-bottom: 0.3rem;
@@ -2985,5 +3104,13 @@
   
   .booking-summary h4 {
     font-size: 1.1rem;
+  }
+}
+
+/* Enhanced hover effects for desktop */
+@media (hover: hover) and (pointer: fine) {
+  .tour-card:hover .mobile-click-hint {
+    display: block;
+    background: rgba(255, 153, 102, 0.1);
   }
 }

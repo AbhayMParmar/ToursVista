@@ -993,8 +993,10 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component with Booking Button - IMPROVED FOR MOBILE
-const TourCard = ({ tour, onBook, isSaved, onSave, onRate }) => {
+// Tour Card Component with ENHANCED CLICK FUNCTIONALITY
+const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const handleSaveClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1007,8 +1009,44 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate }) => {
     onRate(tour);
   };
 
+  const handleBookClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onBook(tour);
+  };
+
+  const handleCardClick = (e) => {
+    // Don't trigger if clicking on action buttons or links
+    if (e.target.closest('.btn-book-now') || 
+        e.target.closest('.btn-save') || 
+        e.target.closest('.btn-details') ||
+        e.target.closest('.tour-price')) {
+      return;
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+    onViewDetails(tour._id);
+  };
+
+  const handleDetailsClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onViewDetails(tour._id);
+  };
+
   return (
-    <div className="tour-card">
+    <div 
+      className="tour-card"
+      onClick={handleCardClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ 
+        cursor: 'pointer',
+        position: 'relative',
+        transform: isHovered ? 'translateY(-10px)' : 'translateY(0)'
+      }}
+    >
       <div className="tour-image">
         <img src={tour.image} alt={tour.title} />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
@@ -1033,7 +1071,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate }) => {
           </div>
         </div>
         <div className="tour-booking-actions">
-          <button className="btn-book-now" onClick={() => onBook(tour)}>
+          <button className="btn-book-now" onClick={handleBookClick}>
             Book Now
           </button>
           <button 
@@ -1050,13 +1088,48 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate }) => {
             ⭐ Rate
           </button>
         </div>
+        {/* Enhanced View Details Link */}
+        <div style={{ 
+          marginTop: '1rem', 
+          paddingTop: '1rem', 
+          borderTop: '1px solid #FFE5CC',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button 
+            className="btn-details"
+            onClick={handleDetailsClick}
+            style={{ 
+              width: '100%',
+              padding: '0.8rem',
+              background: isHovered ? '#FFE5CC' : '#FFFAF5',
+              borderColor: isHovered ? '#FF9966' : '#FFE5CC'
+            }}
+          >
+            <span style={{ marginRight: '0.5rem' }}>🔍</span>
+            View Full Details
+          </button>
+        </div>
+        {/* Click Hint for Mobile */}
+        <div className="mobile-click-hint" style={{
+          display: 'none',
+          textAlign: 'center',
+          marginTop: '0.5rem',
+          fontSize: '0.8rem',
+          color: '#666',
+          padding: '0.5rem',
+          background: '#FFFAF5',
+          borderRadius: '5px'
+        }}>
+          Tap anywhere on card to view details
+        </div>
       </div>
     </div>
   );
 };
 
 // Dashboard Home Component
-const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSaveTour, onRateTour }) => {
+const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSaveTour, onRateTour, onViewTourDetails }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredTours = tours.filter(tour => {
@@ -1125,6 +1198,7 @@ const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSa
                 isSaved={true}
                 onSave={onSaveTour}
                 onRate={onRateTour}
+                onViewDetails={onViewTourDetails}
               />
             ))}
           </div>
@@ -1164,6 +1238,7 @@ const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSa
               isSaved={savedTours.some(t => t._id === tour._id)}
               onSave={onSaveTour}
               onRate={onRateTour}
+              onViewDetails={onViewTourDetails}
             />
           ))}
         </div>
@@ -1268,7 +1343,7 @@ const BookingsPage = ({ user, userBookings, onCancelBooking }) => {
       <h2>My Bookings</h2>
       <p>Manage your upcoming trips and view booking history</p>
       
-      {/* Status Tabs - NOW WORKING */}
+      {/* Status Tabs */}
       <div className="status-tabs">
         <button 
           className={`status-tab ${activeFilter === 'all' ? 'active' : ''}`}
@@ -1397,7 +1472,7 @@ const BookingsPage = ({ user, userBookings, onCancelBooking }) => {
 };
 
 // Tours Page Component
-const ToursPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour }) => {
+const ToursPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour, onViewTourDetails }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 50000]);
@@ -1490,6 +1565,7 @@ const ToursPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour }) =>
             isSaved={savedTours.some(t => t._id === tour._id)}
             onSave={onSaveTour}
             onRate={onRateTour}
+            onViewDetails={onViewTourDetails}
           />
         ))}
       </div>
@@ -2092,7 +2168,7 @@ const OffersPage = () => (
 );
 
 // Saved Tours Page Component
-const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour }) => {
+const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour, onViewTourDetails }) => {
   if (savedTours.length === 0) {
     return (
       <div className="page-content">
@@ -2122,6 +2198,7 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour }) => {
             isSaved={true}
             onSave={onSaveTour}
             onRate={onRateTour}
+            onViewDetails={onViewTourDetails}
           />
         ))}
       </div>
@@ -2131,7 +2208,7 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour }) => {
   );
 };
 
-// Main Dashboard Component - UPDATED with MongoDB saved tours functionality
+// Main Dashboard Component - UPDATED with enhanced click functionality
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2319,6 +2396,11 @@ const Dashboard = () => {
     }
     setSelectedTour(tour);
     setShowRatingModal(true);
+  };
+
+  // NEW FUNCTION: Handle viewing tour details when clicking anywhere on the tour card
+  const handleViewTourDetails = (tourId) => {
+    navigate(`/dashboard/tour/${tourId}`);
   };
 
   const handleConfirmBooking = (booking) => {
@@ -2567,7 +2649,7 @@ const Dashboard = () => {
             </div>
             
             <div className="mobile-menu-content">
-              {/* Welcome Message - MOVED TO MIDDLE (after header, before navigation) */}
+              {/* Welcome Message */}
               {user && (
                 <div className="mobile-welcome-message">
                   <p>
@@ -2691,6 +2773,7 @@ const Dashboard = () => {
                 onBookTour={handleBookTour}
                 onSaveTour={handleSaveTour}
                 onRateTour={handleRateTour}
+                onViewTourDetails={handleViewTourDetails}
               /> 
             } 
           />
@@ -2703,6 +2786,7 @@ const Dashboard = () => {
                 onBookTour={handleBookTour}
                 onSaveTour={handleSaveTour}
                 onRateTour={handleRateTour}
+                onViewTourDetails={handleViewTourDetails}
               /> 
             } 
           />
@@ -2714,6 +2798,7 @@ const Dashboard = () => {
                 onBookTour={handleBookTour}
                 onSaveTour={handleSaveTour}
                 onRateTour={handleRateTour}
+                onViewTourDetails={handleViewTourDetails}
               /> 
             } 
           />
