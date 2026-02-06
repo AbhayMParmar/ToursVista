@@ -397,19 +397,63 @@ const RatingModal = ({ tour, user, onClose, onSubmit }) => {
   );
 };
 
-// Star Rating Display Component
+// Star Rating Display Component - ENHANCED with proper star rendering
 const StarRating = ({ rating, size = 'medium', showNumber = true, showCount = false, totalRatings = 0 }) => {
   const starSize = size === 'small' ? '1rem' : size === 'medium' ? '1.5rem' : '2rem';
+  
+  // Calculate full stars and partial stars
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
   
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <div style={{ display: 'flex', gap: '2px' }}>
-        {[1, 2, 3, 4, 5].map((star) => (
+        {/* Full stars */}
+        {Array(fullStars).fill().map((_, i) => (
           <span
-            key={star}
+            key={`full-${i}`}
             style={{
               fontSize: starSize,
-              color: rating >= star ? '#FF9966' : '#ddd',
+              color: '#FF9966',
+              lineHeight: 1
+            }}
+          >
+            ★
+          </span>
+        ))}
+        
+        {/* Half star */}
+        {hasHalfStar && (
+          <span
+            style={{
+              fontSize: starSize,
+              color: '#FF9966',
+              lineHeight: 1,
+              position: 'relative'
+            }}
+          >
+            ★
+            <span style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '50%',
+              overflow: 'hidden',
+              color: '#ddd'
+            }}>
+              ★
+            </span>
+          </span>
+        )}
+        
+        {/* Empty stars */}
+        {Array(emptyStars).fill().map((_, i) => (
+          <span
+            key={`empty-${i}`}
+            style={{
+              fontSize: starSize,
+              color: '#ddd',
               lineHeight: 1
             }}
           >
@@ -1028,6 +1072,10 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
     onViewDetails(tour._id);
   };
 
+  // Calculate rating display
+  const rating = tour.averageRating || 0;
+  const totalRatings = tour.totalRatings || 0;
+
   return (
     <div 
       className="tour-card"
@@ -1043,16 +1091,35 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
       <div className="tour-image">
         <img src={tour.image} alt={tour.title} />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
+        {/* Rating badge on image */}
+        <div className="tour-rating-badge">
+          <span style={{ fontSize: '1rem', color: '#FF9966' }}>★</span>
+          <span style={{ 
+            fontWeight: 'bold', 
+            fontSize: '0.9rem',
+            marginLeft: '2px'
+          }}>
+            {rating.toFixed(1)}
+          </span>
+          <span style={{ 
+            fontSize: '0.7rem',
+            color: '#fff',
+            marginLeft: '2px',
+            opacity: 0.8
+          }}>
+            ({totalRatings})
+          </span>
+        </div>
       </div>
       <div className="tour-content">
         <h3>{tour.title}</h3>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
           <StarRating 
-            rating={tour.averageRating || 0} 
+            rating={rating} 
             size="small" 
             showNumber={true}
             showCount={true}
-            totalRatings={tour.totalRatings || 0}
+            totalRatings={totalRatings}
           />
         </div>
         <p>{tour.description}</p>
@@ -1080,6 +1147,10 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           >
             ⭐ Rate
           </button>
+        </div>
+        {/* Mobile Click Hint */}
+        <div className="mobile-click-hint">
+          Tap anywhere on card to view details
         </div>
       </div>
     </div>
@@ -1813,6 +1884,26 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           <div className="tour-detail-price">
             ₹{tour.price?.toLocaleString('en-IN')}
           </div>
+          {/* Rating badge on tour detail hero */}
+          <div className="tour-detail-rating-badge">
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              background: 'rgba(255, 255, 255, 0.9)',
+              padding: '0.5rem 1rem',
+              borderRadius: '20px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+            }}>
+              <StarRating 
+                rating={tour.averageRating || 0} 
+                size="small" 
+                showNumber={true}
+                showCount={true}
+                totalRatings={tour.totalRatings || 0}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2027,8 +2118,11 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               <p style={{ margin: '0 0 0.5rem 0' }}>
                 <strong>💰 Price:</strong> ₹{tour.price?.toLocaleString('en-IN')}/person
               </p>
-              <p style={{ margin: '0' }}>
+              <p style={{ margin: '0 0 0.5rem 0' }}>
                 <strong>⏱️ Duration:</strong> {tour.duration}
+              </p>
+              <p style={{ margin: '0' }}>
+                <strong>⭐ Rating:</strong> {tour.averageRating?.toFixed(1) || '0.0'} ({tour.totalRatings || 0} reviews)
               </p>
             </div>
           </div>
@@ -2262,13 +2356,19 @@ const Dashboard = () => {
             // Continue without bookings
           }
           
-          // Fetch tours
+          // Fetch tours with ratings
           try {
             const toursResponse = await fetchWithRetry(`${API_URL}/tours`);
             if (toursResponse.data.success) {
               const allTours = toursResponse.data.data || [];
-              setTours(allTours);
-              localStorage.setItem('cachedTours', JSON.stringify(allTours));
+              // Ensure all tours have rating properties
+              const toursWithRatings = allTours.map(tour => ({
+                ...tour,
+                averageRating: tour.averageRating || 0,
+                totalRatings: tour.totalRatings || 0
+              }));
+              setTours(toursWithRatings);
+              localStorage.setItem('cachedTours', JSON.stringify(toursWithRatings));
               
               // Load saved tours from MongoDB database
               try {
@@ -2325,7 +2425,13 @@ const Dashboard = () => {
       if (user && connectionStatus === 'online') {
         try {
           const allTours = await getTours();
-          setTours(allTours);
+          // Ensure all tours have rating properties
+          const toursWithRatings = allTours.map(tour => ({
+            ...tour,
+            averageRating: tour.averageRating || 0,
+            totalRatings: tour.totalRatings || 0
+          }));
+          setTours(toursWithRatings);
           
           const bookings = await getUserBookings(user._id);
           setUserBookings(bookings);
