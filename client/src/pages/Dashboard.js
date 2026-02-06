@@ -993,9 +993,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-
-
-// Tour Card Component with CLICK FUNCTIONALITY - NO VIEW DETAILS BUTTON
+// Tour Card Component with ENHANCED CLICK FUNCTIONALITY
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -1021,10 +1019,17 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
     // Don't trigger if clicking on action buttons or links
     if (e.target.closest('.btn-book-now') || 
         e.target.closest('.btn-save') || 
+        e.target.closest('.btn-details') ||
         e.target.closest('.tour-price')) {
       return;
     }
     
+    e.preventDefault();
+    e.stopPropagation();
+    onViewDetails(tour._id);
+  };
+
+  const handleDetailsClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     onViewDetails(tour._id);
@@ -1083,7 +1088,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             ⭐ Rate
           </button>
         </div>
-
+        
         {/* Enhanced View Details Link */}
         <div style={{ 
           marginTop: '1rem', 
