@@ -1,0 +1,2178 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import './dashboard.css';
+
+// Replace line 6:
+const API_URL = process.env.REACT_APP_API_URL || 'https://toursvista.onrender.com/api';
+
+// Constants for timeout and retry
+const API_TIMEOUT = 15000; // 15 seconds timeout
+const MAX_RETRIES = 2; // Maximum retry attempts
+const RETRY_DELAY = 1000; // 1 second delay between retries
+
+// Enhanced axios instance with default timeout
+const apiClient = axios.create({
+  timeout: API_TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+// Helper function for API calls with retry logic
+const fetchWithRetry = async (url, config = {}, retries = MAX_RETRIES) => {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await apiClient({
+        url,
+        ...config,
+        timeout: API_TIMEOUT
+      });
+      return response;
+    } catch (error) {
+      // If this is the last attempt, throw the error
+      if (attempt === retries) {
+        throw error;
+      }
+      
+      // Only retry on timeout or network errors
+      if (error.code === 'ECONNABORTED' || !error.response) {
+        console.warn(`Attempt ${attempt + 1} failed, retrying in ${RETRY_DELAY}ms...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (attempt + 1)));
+        continue;
+      }
+      
+      // For other errors (4xx, 5xx), don't retry
+      throw error;
+    }
+  }
+};
+
+// Save booking to database with CONFIRMED status - FIXED
+const saveBooking = async (bookingData) => {
+  try {
+    console.log('📤 Sending booking data:', bookingData);
+    
+    const response = await fetchWithRetry(`${API_URL}/bookings`, {
+      method: 'POST',
+      data: {
+        user: bookingData.user,
+        tour: bookingData.tour,
+        participants: bookingData.participants,
+        travelers: bookingData.participants, // Send both for compatibility
+        travelDate: bookingData.travelDate,
+        specialRequirements: bookingData.specialRequirements || '',
+        specialRequests: bookingData.specialRequirements || '', // Send both
+        contactNumber: bookingData.contactNumber,
+        email: bookingData.email || '', // Add email field
+        status: 'confirmed'
+      }
+    });
+    
+    console.log('✅ Booking response:', response.data);
+    return response.data;
+    
+  } catch (error) {
+    console.error('🔥 Error saving booking:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Booking request timeout. Please try again.');
+    }
+    
+    if (error.response?.data?.errors) {
+      throw new Error(`Validation failed: ${error.response.data.errors.join(', ')}`);
+    }
+    
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw error;
+  }
+};
+
+// Get saved tours from database for a user
+const getSavedToursFromDB = async (userId) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/saved/${userId}`);
+    if (response.data.success) {
+      return response.data.data || [];
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching saved tours from DB:', error);
+    return [];
+  }
+};
+
+// Save tour to database for a user
+const saveTourToDB = async (userId, tourId) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/saved`, {
+      method: 'POST',
+      data: { userId, tourId }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving tour to DB:', error);
+    throw error;
+  }
+};
+
+// Remove saved tour from database for a user
+const removeSavedTourFromDB = async (userId, tourId) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/saved/${userId}/${tourId}`, {
+      method: 'DELETE'
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error removing saved tour from DB:', error);
+    throw error;
+  }
+};
+
+// Toast Notification Component
+const ToastNotification = ({ message, type = 'success', onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const icon = type === 'success' ? '✓' : '⚠️';
+  const title = type === 'success' ? 'Success!' : 'Error!';
+
+  return (
+    <div className="booking-toast">
+      <div className="toast-icon">{icon}</div>
+      <div className="toast-content">
+        <h4>{title}</h4>
+        <p>{message}</p>
+      </div>
+      <button className="toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+};
+
+// Edit Profile Modal Component
+const EditProfileModal = ({ user, onClose, onUpdate }) => {
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || ''
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetchWithRetry(`${API_URL}/auth/profile`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        data: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || '',
+          address: formData.address || ''
+        }
+      });
+      
+      if (response.data.success) {
+        const updatedUser = response.data.user;
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        setIsSubmitting(false);
+        onUpdate(updatedUser);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setIsSubmitting(false);
+      alert(error.code === 'ECONNABORTED' 
+        ? 'Request timeout. Please try again.' 
+        : 'Error updating profile. Please try again.'
+      );
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  return (
+    <div className="edit-profile-modal-overlay" onClick={onClose}>
+      <div className="edit-profile-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Edit Profile</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="modal-content">
+          <form onSubmit={handleSubmit} className="edit-profile-form">
+            <div className={`profile-form-group ${errors.name ? 'error' : ''}`}>
+              <label>Full Name *</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter your full name"
+                required
+              />
+              {errors.name && <span className="error-message">{errors.name}</span>}
+            </div>
+            
+            <div className={`profile-form-group ${errors.email ? 'error' : ''}`}>
+              <label>Email Address *</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Enter your email address"
+                required
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+            
+            <div className="profile-form-group">
+              <label>Phone Number</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="Enter your phone number"
+              />
+            </div>
+            
+            <div className="profile-form-group">
+              <label>Address</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                placeholder="Enter your address"
+              />
+            </div>
+          </form>
+        </div>
+        
+        <div className="modal-buttons">
+          <button type="button" className="btn-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className="btn-confirm" 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Updating...' : 'Update Profile'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Get tours from database with retry
+const getTours = async () => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/tours`);
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Error fetching tours:', error);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Server is taking too long to respond. Please try again.');
+    }
+    return [];
+  }
+};
+
+// Get user bookings from database with retry
+const getUserBookings = async (userId) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/bookings/user/${userId}`);
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Error fetching user bookings:', error);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Unable to load bookings. Please try again.');
+    }
+    return [];
+  }
+};
+
+// Update booking status in database
+const updateBookingStatus = async (bookingId, status) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/bookings/${bookingId}`, {
+      method: 'PUT',
+      data: { status }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Request timeout. Please try again.');
+    }
+    throw error;
+  }
+};
+
+// Booking Modal Component - FIXED to create confirmed booking
+const BookingModal = ({ tour, user, onClose, onConfirm }) => {
+  const [bookingData, setBookingData] = useState({
+    travelers: 1,
+    travelDate: '',
+    specialRequests: '',
+    contactNumber: '',
+    email: user?.email || ''
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [touched, setTouched] = useState({});
+
+  // Mobile-friendly increment/decrement functions
+  const increaseTravelers = () => {
+    if (bookingData.travelers < 10) {
+      setBookingData(prev => ({
+        ...prev,
+        travelers: prev.travelers + 1
+      }));
+    }
+  };
+
+  const decreaseTravelers = () => {
+    if (bookingData.travelers > 1) {
+      setBookingData(prev => ({
+        ...prev,
+        travelers: prev.travelers - 1
+      }));
+    }
+  };
+
+  // Validation functions
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'travelers':
+        if (value < 1) return 'Number of travelers must be at least 1';
+        if (value > 10) return 'Maximum 10 travelers allowed';
+        return '';
+      
+      case 'travelDate':
+        if (!value) return 'Travel date is required';
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) return 'Travel date cannot be in the past';
+        return '';
+      
+      case 'contactNumber':
+        if (!value) return 'Contact number is required';
+        if (!/^\d{10}$/.test(value)) return 'Contact number must be 10 digits';
+        return '';
+      
+      case 'email':
+        if (!value) return 'Email address is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email address';
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(bookingData).forEach(key => {
+      if (key !== 'specialRequests') {
+        const error = validateField(key, bookingData[key]);
+        if (error) newErrors[key] = error;
+      }
+    });
+    return newErrors;
+  };
+
+  // Calculate total price
+  const calculatePrice = (price, travelers) => {
+    return price * travelers;
+  };
+
+  const totalPrice = calculatePrice(tour.price, bookingData.travelers);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Mark all fields as touched
+    const allTouched = Object.keys(bookingData).reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {});
+    setTouched(allTouched);
+    
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const booking = {
+        user: user._id,
+        tour: tour._id,
+        participants: bookingData.travelers,
+        travelDate: bookingData.travelDate,
+        specialRequirements: bookingData.specialRequests,
+        contactNumber: bookingData.contactNumber,
+        email: bookingData.email || user.email // Use form email or user email
+      };
+      
+      console.log('📝 Submitting booking:', booking);
+      
+      const response = await saveBooking(booking);
+      
+      if (response.success) {
+        const bookingWithDetails = {
+          _id: response.data._id,
+          bookingId: response.data.bookingId || `TV${response.data._id.toString().slice(-8)}`,
+          tourId: response.data.tourId,
+          tourTitle: response.data.tourTitle,
+          tour: {
+            _id: tour._id,
+            title: tour.title,
+            price: tour.price,
+            duration: tour.duration,
+            image: response.data.tourImage || tour.image
+          },
+          userId: response.data.userId,
+          userName: response.data.userName,
+          userEmail: response.data.userEmail,
+          participants: response.data.participants,
+          travelers: response.data.participants,
+          travelDate: response.data.travelDate,
+          bookingDate: response.data.bookingDate,
+          totalPrice: response.data.totalPrice,
+          totalAmount: response.data.totalPrice,
+          status: 'confirmed',
+          specialRequirements: response.data.specialRequirements,
+          contactNumber: response.data.contactNumber,
+          createdAt: response.data.createdAt
+        };
+        
+        console.log('✅ Booking created:', bookingWithDetails);
+        setIsSubmitting(false);
+        onConfirm(bookingWithDetails);
+        onClose();
+      }
+    } catch (error) {
+      console.error('🔥 Error creating booking:', error);
+      setIsSubmitting(false);
+      alert(error.message || 'Error creating booking. Please try again.');
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    let processedValue = value;
+    
+    // Phone number validation - only allow digits and limit to 10
+    if (name === 'contactNumber') {
+      processedValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+    
+    // Travelers validation - ensure it's a number between 1-10
+    if (name === 'travelers') {
+      const numValue = parseInt(value) || 1;
+      processedValue = Math.min(10, Math.max(1, numValue));
+    }
+    
+    setBookingData(prev => ({
+      ...prev,
+      [name]: processedValue
+    }));
+    
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleBlur = (fieldName) => {
+    setTouched(prev => ({
+      ...prev,
+      [fieldName]: true
+    }));
+    
+    const error = validateField(fieldName, bookingData[fieldName]);
+    if (error) {
+      setErrors(prev => ({
+        ...prev,
+        [fieldName]: error
+      }));
+    }
+  };
+
+  const isFormValid = () => {
+    return Object.keys(validateForm()).length === 0;
+  };
+
+  return (
+    <div className="booking-modal-overlay" onClick={onClose}>
+      <div className="booking-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Book {tour.title}</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="modal-content">
+          <form onSubmit={handleSubmit} className="booking-form" noValidate>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className={`booking-form-group ${touched.travelers && errors.travelers ? 'error' : ''}`}>
+                <label>Number of Travelers *</label>
+                <div className="number-input-wrapper">
+                  <input
+                    type="number"
+                    name="travelers"
+                    min="1"
+                    max="10"
+                    value={bookingData.travelers}
+                    onChange={handleInputChange}
+                    onBlur={() => handleBlur('travelers')}
+                    required
+                  />
+                  <div className="number-input-controls">
+                    <button 
+                      type="button" 
+                      className="number-input-btn increase"
+                      onClick={increaseTravelers}
+                      aria-label="Increase travelers"
+                    >
+                      +
+                    </button>
+                    <button 
+                      type="button" 
+                      className="number-input-btn decrease"
+                      onClick={decreaseTravelers}
+                      aria-label="Decrease travelers"
+                    >
+                      −
+                    </button>
+                  </div>
+                </div>
+                {touched.travelers && errors.travelers && (
+                  <span className="error-message">{errors.travelers}</span>
+                )}
+                <span className="validation-hint">Min: 1, Max: 10</span>
+              </div>
+              
+              <div className={`booking-form-group ${touched.travelDate && errors.travelDate ? 'error' : ''}`}>
+                <label>Travel Date *</label>
+                <input
+                  type="date"
+                  name="travelDate"
+                  value={bookingData.travelDate}
+                  onChange={handleInputChange}
+                  onBlur={() => handleBlur('travelDate')}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                />
+                {touched.travelDate && errors.travelDate && (
+                  <span className="error-message">{errors.travelDate}</span>
+                )}
+              </div>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className={`booking-form-group ${touched.contactNumber && errors.contactNumber ? 'error' : ''}`}>
+                <label>Contact Number *</label>
+                <input
+                  type="tel"
+                  name="contactNumber"
+                  value={bookingData.contactNumber}
+                  onChange={handleInputChange}
+                  onBlur={() => handleBlur('contactNumber')}
+                  placeholder="Enter 10-digit number"
+                  maxLength="10"
+                  required
+                />
+                {touched.contactNumber && errors.contactNumber && (
+                  <span className="error-message">{errors.contactNumber}</span>
+                )}
+                <span className="validation-hint">10 digits only</span>
+              </div>
+              
+              <div className={`booking-form-group ${touched.email && errors.email ? 'error' : ''}`}>
+                <label>Email Address *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={bookingData.email}
+                  onChange={handleInputChange}
+                  onBlur={() => handleBlur('email')}
+                  placeholder="Enter your email"
+                  required
+                />
+                {touched.email && errors.email && (
+                  <span className="error-message">{errors.email}</span>
+                )}
+              </div>
+            </div>
+            
+            <div className="booking-form-group">
+              <label>Special Requests (Optional)</label>
+              <textarea
+                name="specialRequests"
+                value={bookingData.specialRequests}
+                onChange={handleInputChange}
+                placeholder="Any special requirements or preferences..."
+                rows="3"
+              />
+            </div>
+            
+            <div className="booking-summary">
+              <h4>Booking Summary</h4>
+              <div className="booking-summary-item">
+                <span>Tour:</span>
+                <span>{tour.title}</span>
+              </div>
+              <div className="booking-summary-item">
+                <span>Price per person:</span>
+                <span>₹{tour.price.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="booking-summary-item">
+                <span>Number of travelers:</span>
+                <span>{bookingData.travelers}</span>
+              </div>
+              <div className="booking-summary-item">
+                <span>Total Amount:</span>
+                <span>₹{totalPrice.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <div className="modal-buttons">
+          <button type="button" className="btn-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className="btn-confirm" 
+            onClick={handleSubmit}
+            disabled={isSubmitting || !isFormValid()}
+          >
+            {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Tour Card Component with Booking Button - IMPROVED FOR MOBILE
+const TourCard = ({ tour, onBook, isSaved, onSave }) => {
+  const handleSaveClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSave(tour._id);
+  };
+
+  return (
+    <div className="tour-card">
+      <div className="tour-image">
+        <img src={tour.image} alt={tour.title} />
+        <div className="tour-price">₹{tour.price.toLocaleString('en-IN')}</div>
+      </div>
+      <div className="tour-content">
+        <h3>{tour.title}</h3>
+        <p>{tour.description}</p>
+        <div className="tour-meta">
+          <span className="duration">⏱️ {tour.duration}</span>
+          <Link to={`/dashboard/tour/${tour._id}`} className="btn-details">View Details</Link>
+        </div>
+        <div className="tour-booking-actions">
+          <button className="btn-book-now" onClick={() => onBook(tour)}>
+            Book Now
+          </button>
+          <button 
+            className={`btn-save ${isSaved ? 'saved' : ''}`} 
+            onClick={handleSaveClick}
+          >
+            {isSaved ? '✓ Saved' : '💾 Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Dashboard Home Component
+const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSaveTour }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredTours = tours.filter(tour => {
+    const matchesSearch = tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         tour.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
+  // Calculate confirmed bookings count
+  const confirmedBookingsCount = userBookings.filter(booking => booking.status === 'confirmed').length;
+
+  return (
+    <>
+      {/* HERO SECTION */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1>Explore Incredible India</h1>
+          <p>Discover the diversity of Indian culture, heritage, and landscapes. Plan your perfect journey with TourVista.</p>
+          
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <span className="number">{tours.length}+</span>
+              <span className="label">Tour Packages</span>
+            </div>
+            <div className="hero-stat">
+              <span className="number">{savedTours.length}</span>
+              <span className="label">Saved Tours</span>
+            </div>
+            <div className="hero-stat">
+              <span className="number">{confirmedBookingsCount}</span>
+              <span className="label">Active Bookings</span>
+            </div>
+            <div className="hero-stat">
+              <span className="number">24/7</span>
+              <span className="label">Support</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WELCOME SECTION */}
+      <section className="welcome-section">
+        <div className="welcome-card">
+          <h2>Namaste, {user?.name}!</h2>
+          <p>Welcome to your personal travel dashboard. Explore the wonders of India, manage your bookings, and discover new destinations tailored just for you.</p>
+          <Link to="/dashboard/tours" className="btn-explore">
+            Start Exploring
+          </Link>
+        </div>
+      </section>
+
+      {/* SAVED TOURS SECTION */}
+      {savedTours.length > 0 && (
+        <section className="saved-tours-section">
+          <div className="section-header">
+            <h2>Your Saved Tours</h2>
+            <p>Tours you've saved for later</p>
+          </div>
+          
+          <div className="saved-tours-grid">
+            {savedTours.map(tour => (
+              <TourCard 
+                key={tour._id} 
+                tour={tour} 
+                onBook={onBookTour}
+                isSaved={true}
+                onSave={onSaveTour}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* FEATURED TOURS WITH SEARCH */}
+      <section className="featured-tours">
+        <div className="section-header">
+          <h2>Featured Indian Tours</h2>
+          <p>Handpicked tours for an authentic Indian experience</p>
+          
+          <div style={{ marginTop: '2rem', maxWidth: '500px', margin: '2rem auto 0' }}>
+            <input
+              type="text"
+              placeholder="🔍 Search tours by name or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                border: '1px solid #FFE5CC',
+                borderRadius: '10px',
+                fontSize: '1rem',
+                background: 'white'
+              }}
+            />
+          </div>
+        </div>
+        
+        <div className="tours-grid">
+          {filteredTours.map(tour => (
+            <TourCard 
+              key={tour._id} 
+              tour={tour} 
+              onBook={onBookTour}
+              isSaved={savedTours.some(t => t._id === tour._id)}
+              onSave={onSaveTour}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* USER STATS */}
+      <section className="user-stats">
+        <div className="stats-card">
+          <h3>Your Travel Dashboard</h3>
+          <p>Track your travel milestones and explore new opportunities across India</p>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <span className="stat-number">{savedTours.length}</span>
+              <span className="stat-label">Saved Tours</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{confirmedBookingsCount}</span>
+              <span className="stat-label">Active Bookings</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{user ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()}</span>
+              <span className="stat-label">Member Since</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">
+                ₹{userBookings
+                  .filter(booking => booking.status === 'confirmed')
+                  .reduce((sum, booking) => sum + (booking.totalPrice || booking.totalAmount || 0), 0)
+                  .toLocaleString('en-IN')}
+              </span>
+              <span className="stat-label">Total Spent</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+};
+
+// My Bookings Page Component - FIXED to show confirmed bookings
+const BookingsPage = ({ user, userBookings, onCancelBooking }) => {
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      return 'Invalid Date';
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (window.confirm('Are you sure you want to cancel this booking?')) {
+      try {
+        const response = await updateBookingStatus(bookingId, 'cancelled');
+        if (response.success) {
+          onCancelBooking(bookingId);
+        }
+      } catch (error) {
+        alert(error.message || 'Error cancelling booking');
+      }
+    }
+  };
+
+  // Filter bookings
+  const confirmedBookings = userBookings.filter(booking => booking.status === 'confirmed');
+  const cancelledBookings = userBookings.filter(booking => booking.status === 'cancelled');
+
+  if (userBookings.length === 0) {
+    return (
+      <div className="page-content">
+        <h2>My Bookings</h2>
+        <div className="empty-bookings">
+          <div className="empty-bookings-icon">📋</div>
+          <h3 style={{ color: '#333', marginBottom: '1rem' }}>No Bookings Yet</h3>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Start your Indian adventure by booking your first tour!</p>
+          <Link to="/dashboard/tours" className="btn-details">Browse Tours</Link>
+        </div>
+        <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-content">
+      <h2>My Bookings</h2>
+      <p>Manage your upcoming trips and view booking history</p>
+      
+      {/* Status Tabs */}
+      <div className="status-tabs">
+        <button className="status-tab active">
+          All <span className="tab-count">{userBookings.length}</span>
+        </button>
+        <button className="status-tab">
+          Confirmed <span className="tab-count">{confirmedBookings.length}</span>
+        </button>
+        <button className="status-tab">
+          Cancelled <span className="tab-count">{cancelledBookings.length}</span>
+        </button>
+      </div>
+      
+      <div className="bookings-container">
+        {userBookings.map(booking => (
+          <div key={booking._id} className="booking-card-item">
+            <div className="booking-header">
+              <h3>{booking.tour?.title || booking.tourTitle}</h3>
+              <span className={`booking-status ${booking.status}`}>
+                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+              </span>
+            </div>
+            
+            <div className="booking-details">
+              <div className="booking-detail">
+                <strong>Booking ID:</strong>
+                <span>TV{booking._id.toString().slice(-8)}</span>
+              </div>
+              <div className="booking-detail">
+                <strong>Booking Date:</strong>
+                <span>{formatDate(booking.bookingDate || booking.createdAt)}</span>
+              </div>
+              <div className="booking-detail">
+                <strong>Travel Date:</strong>
+                <span>{formatDate(booking.travelDate)}</span>
+              </div>
+              <div className="booking-detail">
+                <strong>Travelers:</strong>
+                <span>{booking.participants || booking.travelers} person(s)</span>
+              </div>
+              <div className="booking-detail">
+                <strong>Total Amount:</strong>
+                <span style={{ color: '#2E8B57', fontWeight: '600' }}>
+                  {formatCurrency(booking.totalPrice || booking.totalAmount)}
+                </span>
+              </div>
+              {booking.contactNumber && (
+                <div className="booking-detail">
+                  <strong>Contact:</strong>
+                  <span>{booking.contactNumber}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="booking-actions">
+              <Link to={`/dashboard/tour/${booking.tour?._id || booking.tourId}`} className="btn-view-details">View Tour</Link>
+              {booking.status === 'confirmed' && (
+                <button 
+                  className="btn-cancel-booking"
+                  onClick={() => handleCancelBooking(booking._id)}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+    </div>
+  );
+};
+
+// Tours Page Component
+const ToursPage = ({ tours, savedTours, onBookTour, onSaveTour }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [priceRange, setPriceRange] = useState([0, 50000]);
+
+  const filteredTours = tours.filter(tour => {
+    const price = tour.price || 0;
+    const matchesSearch = tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         tour.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
+    const matchesType = selectedType === 'all' || tour.category === selectedType || tour.type === selectedType;
+    return matchesSearch && matchesPrice && matchesType;
+  });
+
+  const tourTypes = [
+    { id: 'all', label: 'All Tours' },
+    { id: 'heritage', label: '🏰 Heritage' },
+    { id: 'adventure', label: '⛰️ Adventure' },
+    { id: 'beach', label: '🏖️ Beach' },
+    { id: 'wellness', label: '🧘 Wellness' }
+  ];
+
+  return (
+    <div className="page-content">
+      <h2>Browse All Indian Tours</h2>
+      <p>Discover amazing destinations across India. From the snow-capped Himalayas to tropical beaches, find your perfect Indian adventure.</p>
+      
+      {/* Filters */}
+      <div style={{ marginTop: '2rem', padding: '2rem', background: '#FFFAF5', borderRadius: '10px', border: '1px solid #FFE5CC' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          {tourTypes.map(type => (
+            <button 
+              key={type.id}
+              onClick={() => setSelectedType(type.id)}
+              style={{ 
+                padding: '1rem', 
+                background: selectedType === type.id ? '#2E8B57' : 'white', 
+                color: selectedType === type.id ? 'white' : '#333',
+                border: '1px solid #FFE5CC', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                fontWeight: '600',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
+        
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>
+            Price Range: ₹{priceRange[0].toLocaleString('en-IN')} - ₹{priceRange[1].toLocaleString('en-IN')}
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100000"
+            step="5000"
+            value={priceRange[1]}
+            onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
+            style={{ width: '100%' }}
+          />
+        </div>
+        
+        <input
+          type="text"
+          placeholder="🔍 Search tours..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '1rem',
+            border: '1px solid #FFE5CC',
+            borderRadius: '10px',
+            fontSize: '1rem',
+            background: 'white'
+          }}
+        />
+      </div>
+      
+      {/* Tours Grid */}
+      <div className="tours-grid" style={{ marginTop: '2rem' }}>
+        {filteredTours.map(tour => (
+          <TourCard 
+            key={tour._id} 
+            tour={tour} 
+            onBook={onBookTour}
+            isSaved={savedTours.some(t => t._id === tour._id)}
+            onSave={onSaveTour}
+          />
+        ))}
+      </div>
+      
+      {filteredTours.length === 0 && (
+        <div className="saved-tours-empty">
+          <div className="saved-tours-empty-icon">🔍</div>
+          <h3 style={{ color: '#333', marginBottom: '1rem' }}>No tours found</h3>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Try adjusting your filters or search terms.</p>
+          <button 
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedType('all');
+              setPriceRange([0, 50000]);
+            }}
+            className="btn-details"
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
+      
+      <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+    </div>
+  );
+};
+
+// Profile Page Component
+const ProfilePage = ({ user, userBookings, savedTours, onEditProfile }) => {
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // Calculate stats
+  const confirmedBookingsCount = userBookings.filter(booking => booking.status === 'confirmed').length;
+  const cancelledBookingsCount = userBookings.filter(booking => booking.status === 'cancelled').length;
+  const totalSpent = userBookings
+    .filter(booking => booking.status === 'confirmed')
+    .reduce((sum, booking) => sum + (booking.totalPrice || booking.totalAmount || 0), 0);
+
+  return (
+    <div className="page-content">
+      <h2>My Profile</h2>
+      {user && (
+        <>
+          <div className="profile-info">
+            <p><strong>Name:</strong> {user.name}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Phone:</strong> {user.phone || 'Not provided'}</p>
+            <p><strong>Address:</strong> {user.address || 'Not provided'}</p>
+            <p><strong>Member Since:</strong> {new Date(user.createdAt).toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}</p>
+            <p><strong>Account Status:</strong> <span style={{ color: '#2E8B57' }}>Active</span></p>
+            <p><strong>Total Bookings:</strong> {userBookings.length}</p>
+            <p><strong>Confirmed Bookings:</strong> {confirmedBookingsCount}</p>
+            <p><strong>Cancelled Bookings:</strong> {cancelledBookingsCount}</p>
+            <p><strong>Saved Tours:</strong> {savedTours.length}</p>
+            <p><strong>Total Spent:</strong> ₹{totalSpent.toLocaleString('en-IN')}</p>
+          </div>
+          
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <button className="btn-details" onClick={() => setShowEditModal(true)}>Edit Profile</button>
+            <button className="btn-details" style={{ background: 'white', borderColor: '#2E8B57', color: '#2E8B57' }}>Travel Preferences</button>
+            <Link to="/dashboard/bookings" className="btn-details">View Bookings</Link>
+            <Link to="/dashboard/saved" className="btn-details">View Saved Tours</Link>
+          </div>
+        </>
+      )}
+      
+      <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+
+      {showEditModal && user && (
+        <EditProfileModal
+          user={user}
+          onClose={() => setShowEditModal(false)}
+          onUpdate={(updatedUser) => {
+            onEditProfile(updatedUser);
+            setShowEditModal(false);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// Tour Detail Page Component - ENHANCED MOBILE RESPONSIVE DESIGN
+const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour }) => {
+  const location = useLocation();
+  const tourId = location.pathname.split('/').pop();
+  const tour = tours.find(t => t._id === tourId);
+  const isSaved = savedTours.some(t => t._id === tourId);
+
+  if (!tour) {
+    return (
+      <div className="page-content">
+        <h2>Tour Not Found</h2>
+        <p>The tour you're looking for doesn't exist.</p>
+        <Link to="/dashboard/tours" className="btn-back">← Back to Tours</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-content tour-detail-page">
+      <div className="tour-detail-header">
+        <div className="tour-detail-hero">
+          <img 
+            src={tour.image} 
+            alt={tour.title}
+            className="tour-detail-image"
+          />
+          <div className="tour-detail-overlay">
+            <h2 className="tour-detail-title">{tour.title}</h2>
+            <p className="tour-detail-subtitle">Discover the beauty and culture of this amazing destination</p>
+          </div>
+          <div className="tour-detail-price">
+            ₹{tour.price.toLocaleString('en-IN')}
+          </div>
+        </div>
+      </div>
+
+      <div className="tour-detail-content">
+        <div className="tour-detail-main">
+          <div className="tour-detail-section">
+            <h3 className="section-title">🏔️ Tour Overview</h3>
+            <p className="tour-description">
+              {tour.description}
+            </p>
+            
+            <div className="tour-meta-grid">
+              <div className="tour-meta-item">
+                <div className="tour-meta-icon">⏱️</div>
+                <div>
+                  <div className="tour-meta-label">Duration</div>
+                  <div className="tour-meta-value">{tour.duration}</div>
+                </div>
+              </div>
+              
+              <div className="tour-meta-item">
+                <div className="tour-meta-icon">📍</div>
+                <div>
+                  <div className="tour-meta-label">Category</div>
+                  <div className="tour-meta-value">{tour.category || 'Cultural'}</div>
+                </div>
+              </div>
+              
+              <div className="tour-meta-item">
+                <div className="tour-meta-icon">👥</div>
+                <div>
+                  <div className="tour-meta-label">Group Size</div>
+                  <div className="tour-meta-value">2-10 People</div>
+                </div>
+              </div>
+              
+              <div className="tour-meta-item">
+                <div className="tour-meta-icon">⭐</div>
+                <div>
+                  <div className="tour-meta-label">Rating</div>
+                  <div className="tour-meta-value">4.8/5</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="tour-detail-section">
+            <h3 className="section-title">✨ Tour Highlights</h3>
+            <div className="tour-highlights">
+              <div className="tour-highlight">
+                <div className="tour-highlight-icon">🏰</div>
+                <div className="tour-highlight-content">
+                  <h4>Cultural Immersion</h4>
+                  <p>Authentic local experiences</p>
+                </div>
+              </div>
+              
+              <div className="tour-highlight">
+                <div className="tour-highlight-icon">🍛</div>
+                <div className="tour-highlight-content">
+                  <h4>Local Cuisine</h4>
+                  <p>Traditional food tasting</p>
+                </div>
+              </div>
+              
+              <div className="tour-highlight">
+                <div className="tour-highlight-icon">📸</div>
+                <div className="tour-highlight-content">
+                  <h4>Photo Spots</h4>
+                  <p>Best photography locations</p>
+                </div>
+              </div>
+              
+              <div className="tour-highlight">
+                <div className="tour-highlight-icon">🏨</div>
+                <div className="tour-highlight-content">
+                  <h4>Comfort Stay</h4>
+                  <p>Quality accommodation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="tour-detail-section">
+            <h3 className="section-title">📅 Itinerary</h3>
+            <div className="tour-itinerary">
+              <div className="itinerary-day">
+                <div className="itinerary-day-header">
+                  <h4>Day 1: Arrival & Orientation</h4>
+                  <div className="itinerary-day-number">1</div>
+                </div>
+                <ul className="itinerary-activities">
+                  <li>Arrival at destination airport</li>
+                  <li>Hotel check-in and refresh</li>
+                  <li>Welcome dinner with traditional cuisine</li>
+                  <li>Briefing about the tour itinerary</li>
+                </ul>
+              </div>
+              
+              <div className="itinerary-day">
+                <div className="itinerary-day-header">
+                  <h4>Day 2: City Exploration</h4>
+                  <div className="itinerary-day-number">2</div>
+                </div>
+                <ul className="itinerary-activities">
+                  <li>Breakfast at hotel</li>
+                  <li>Guided city tour with local expert</li>
+                  <li>Visit historical monuments</li>
+                  <li>Lunch at authentic local restaurant</li>
+                  <li>Cultural show in the evening</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="tour-detail-sidebar">
+          <div className="tour-detail-section">
+            <h3 className="section-title">✅ Inclusions</h3>
+            <div className="tour-inclusion-card">
+              <h4>What's Included</h4>
+              <ul className="inclusion-list">
+                <li className="included">Accommodation for all nights</li>
+                <li className="included">Daily breakfast and 3 dinners</li>
+                <li className="included">All transportation during tour</li>
+                <li className="included">Professional tour guide</li>
+                <li className="included">Entrance fees to all attractions</li>
+                <li className="not-included">International flights</li>
+                <li className="not-included">Travel insurance</li>
+                <li className="not-included">Personal expenses</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="tour-detail-section">
+            <h3 className="section-title">ℹ️ Important Info</h3>
+            <div className="important-info-card">
+              <p><strong>Booking Policy:</strong> 30% advance required</p>
+              <p><strong>Cancellation:</strong> Free cancellation 7 days before</p>
+              <p><strong>Support:</strong> 24/7 customer support</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="tour-detail-actions">
+        <button 
+          className="btn-book-tour"
+          onClick={() => onBookTour(tour)}
+        >
+          <span>✈️</span> Book This Tour
+        </button>
+        
+        <button 
+          className={`btn-save-tour ${isSaved ? 'saved' : ''}`}
+          onClick={() => onSaveTour(tour._id)}
+        >
+          {isSaved ? '✓ Saved to List' : '💾 Save for Later'}
+        </button>
+        
+        <Link to="/dashboard/tours" className="btn-back-to-tours">
+          ← Back to Tours
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+// Offers Page Component
+const OffersPage = () => (
+  <div className="page-content">
+    <h2>Special Offers</h2>
+    <p>Exclusive deals and discounts for TourVista India members</p>
+    
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+      gap: '2rem',
+      marginTop: '2rem'
+    }}>
+      <div style={{ 
+        background: '#2E8B57', 
+        padding: '2rem', 
+        borderRadius: '8px',
+        color: 'white'
+      }}>
+        <h3 style={{ marginBottom: '1rem' }}>🎉 Early Bird Discount</h3>
+        <p style={{ opacity: 0.9, marginBottom: '1.5rem' }}>Book 60 days in advance and get 15% off on all Indian tours!</p>
+        <button style={{ 
+          background: 'white', 
+          color: '#2E8B57', 
+          border: 'none', 
+          padding: '0.8rem 1.5rem', 
+          borderRadius: '8px',
+          fontWeight: '600',
+          cursor: 'pointer'
+        }}>
+          View Tours
+        </button>
+      </div>
+      
+      <div style={{ 
+        background: '#FF9966', 
+        padding: '2rem', 
+        borderRadius: '8px',
+        color: 'white'
+      }}>
+        <h3 style={{ marginBottom: '1rem' }}>👨‍👩‍👧‍👦 Group Discount</h3>
+        <p style={{ opacity: 0.9, marginBottom: '1.5rem' }}>Travel with 4+ people and get 20% discount on total package!</p>
+        <button style={{ 
+          background: 'white', 
+          color: '#FF9966', 
+          border: 'none', 
+          padding: '0.8rem 1.5rem', 
+          borderRadius: '8px',
+          fontWeight: '600',
+          cursor: 'pointer'
+        }}>
+          Book Now
+        </button>
+      </div>
+    </div>
+    
+    <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+  </div>
+);
+
+// Saved Tours Page Component
+const SavedToursPage = ({ savedTours, onBookTour, onSaveTour }) => {
+  if (savedTours.length === 0) {
+    return (
+      <div className="page-content">
+        <h2>Saved Tours</h2>
+        <div className="saved-tours-empty">
+          <div className="saved-tours-empty-icon">💾</div>
+          <h3 style={{ color: '#333', marginBottom: '1rem' }}>No Saved Tours</h3>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Save tours you're interested in by clicking the Save button on any tour.</p>
+          <Link to="/dashboard/tours" className="btn-details">Browse Tours</Link>
+        </div>
+        <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-content">
+      <h2>Saved Tours</h2>
+      <p>Your collection of tours saved for later</p>
+      
+      <div className="tours-grid" style={{ marginTop: '2rem' }}>
+        {savedTours.map(tour => (
+          <TourCard 
+            key={tour._id} 
+            tour={tour} 
+            onBook={onBookTour}
+            isSaved={true}
+            onSave={onSaveTour}
+          />
+        ))}
+      </div>
+      
+      <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
+    </div>
+  );
+};
+
+// Main Dashboard Component - UPDATED with MongoDB saved tours functionality
+const Dashboard = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [tours, setTours] = useState([]);
+  const [userBookings, setUserBookings] = useState([]);
+  const [savedTours, setSavedTours] = useState([]);
+  const [selectedTour, setSelectedTour] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('online');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      setConnectionStatus('online');
+      showNotification('Back online!', 'success');
+    };
+
+    const handleOffline = () => {
+      setConnectionStatus('offline');
+      showNotification('You are offline. Some features may be limited.', 'error');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check
+    setConnectionStatus(navigator.onLine ? 'online' : 'offline');
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const showNotification = (message, type = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+  };
+
+  // Load saved tours from database
+  const loadSavedToursFromDB = async (userId) => {
+    try {
+      const savedTourIdsResponse = await getSavedToursFromDB(userId);
+      // savedTourIdsResponse contains an array of tour objects with full tour details
+      return savedTourIdsResponse;
+    } catch (error) {
+      console.error('Error loading saved tours from DB:', error);
+      return [];
+    }
+  };
+
+  // Update the fetchUserProfile function to handle errors better:
+  const fetchUserProfile = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      // Fetch user profile
+      try {
+        const response = await fetchWithRetry(`${API_URL}/auth/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.data.success) {
+          const userData = response.data.user;
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          
+          // Fetch user bookings
+          try {
+            const bookingsResponse = await fetchWithRetry(`${API_URL}/bookings/user/${userData._id}`);
+            if (bookingsResponse.data.success) {
+              setUserBookings(bookingsResponse.data.data || []);
+            }
+          } catch (bookingError) {
+            console.error('Error fetching bookings:', bookingError);
+            // Continue without bookings
+          }
+          
+          // Fetch tours
+          try {
+            const toursResponse = await fetchWithRetry(`${API_URL}/tours`);
+            if (toursResponse.data.success) {
+              const allTours = toursResponse.data.data || [];
+              setTours(allTours);
+              localStorage.setItem('cachedTours', JSON.stringify(allTours));
+              
+              // Load saved tours from MongoDB database
+              try {
+                const savedToursFromDB = await loadSavedToursFromDB(userData._id);
+                setSavedTours(savedToursFromDB);
+              } catch (savedToursError) {
+                console.error('Error loading saved tours from DB:', savedToursError);
+                setSavedTours([]);
+              }
+            }
+          } catch (tourError) {
+            console.error('Error fetching tours:', tourError);
+            // Load cached tours
+            const cachedTours = localStorage.getItem('cachedTours');
+            if (cachedTours) {
+              try {
+                setTours(JSON.parse(cachedTours));
+              } catch (e) {
+                console.error('Error parsing cached tours:', e);
+              }
+            }
+          }
+        }
+      } catch (profileError) {
+        console.error('Error fetching profile:', profileError);
+        
+        // Use stored user if available
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          showNotification('Using cached profile data', 'warning');
+        } else {
+          localStorage.removeItem('token');
+          navigate('/login');
+          return;
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      showNotification('Error loading dashboard. Please refresh.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  useEffect(() => {
+    // Update tours and bookings when user changes
+    const fetchData = async () => {
+      if (user && connectionStatus === 'online') {
+        try {
+          const allTours = await getTours();
+          setTours(allTours);
+          
+          const bookings = await getUserBookings(user._id);
+          setUserBookings(bookings);
+          
+          // Load saved tours from MongoDB database
+          const savedToursFromDB = await loadSavedToursFromDB(user._id);
+          setSavedTours(savedToursFromDB);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }
+    };
+    
+    fetchData();
+  }, [user, connectionStatus]);
+
+  const handleBookTour = (tour) => {
+    setSelectedTour(tour);
+    setShowBookingModal(true);
+  };
+
+  const handleConfirmBooking = (booking) => {
+    // Update local state with CONFIRMED booking
+    const updatedBookings = [booking, ...userBookings];
+    setUserBookings(updatedBookings);
+    
+    setShowBookingModal(false);
+    setSelectedTour(null);
+    showNotification(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`);
+  };
+
+  const handleCancelBooking = (bookingId) => {
+    setUserBookings(prev => 
+      prev.map(booking => 
+        booking._id === bookingId 
+          ? { ...booking, status: 'cancelled' }
+          : booking
+      )
+    );
+    
+    showNotification('Booking cancelled successfully!', 'success');
+  };
+
+  const handleSaveTour = async (tourId) => {
+    if (!user) {
+      showNotification('Please login to save tours', 'error');
+      return;
+    }
+    
+    const isCurrentlySaved = savedTours.some(tour => tour._id === tourId);
+    
+    try {
+      if (isCurrentlySaved) {
+        // Remove from saved in database
+        await removeSavedTourFromDB(user._id, tourId);
+        
+        // Update local state
+        setSavedTours(prev => prev.filter(tour => tour._id !== tourId));
+        showNotification('Tour removed from saved list!', 'success');
+      } else {
+        // Add to saved in database
+        await saveTourToDB(user._id, tourId);
+        
+        // Update local state - find the tour and add it
+        const tourToSave = tours.find(t => t._id === tourId);
+        if (tourToSave) {
+          setSavedTours(prev => [...prev, tourToSave]);
+          showNotification('Tour saved successfully!', 'success');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving/removing tour:', error);
+      showNotification('Error updating saved tours. Please try again.', 'error');
+    }
+  };
+
+  const handleEditProfile = (updatedUser) => {
+    setUser(updatedUser);
+    showNotification('Profile updated successfully!', 'success');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setSavedTours([]); // Clear saved tours from state
+    setShowMobileMenu(false);
+    navigate('/');
+  };
+
+  const handleDashboardClick = (e) => {
+    e.preventDefault();
+    setShowMobileMenu(false);
+    navigate('/dashboard');
+  };
+
+  const handleHomeRedirect = () => {
+    setShowMobileMenu(false);
+    navigate('/');
+  };
+
+  const toggleMobileMenu = () => {
+    setShowMobileMenu(!showMobileMenu);
+  };
+
+  const closeMobileMenu = () => {
+    setShowMobileMenu(false);
+  };
+
+  const handleMobileLinkClick = (path) => {
+    setShowMobileMenu(false);
+    navigate(path);
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  // Calculate confirmed bookings count
+  const confirmedBookingsCount = userBookings.filter(booking => booking.status === 'confirmed').length;
+
+  const refreshDashboard = () => {
+    setLoading(true);
+    fetchUserProfile();
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading your dashboard...</p>
+        {connectionStatus === 'offline' && (
+          <p style={{ color: '#FF9966', marginTop: '1rem' }}>
+            You are offline. Using cached data where available.
+          </p>
+        )}
+        <button 
+          onClick={refreshDashboard}
+          style={{
+            marginTop: '1rem',
+            padding: '0.5rem 1rem',
+            background: '#2E8B57',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Retry Loading
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-container">
+      {/* FIXED NAVBAR WITH HAMBURGER MENU */}
+      <nav className="dashboard-navbar">
+        <div className="navbar-brand">
+          <div 
+            onClick={handleDashboardClick}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <h1>TourVista India</h1>
+            {connectionStatus === 'offline' && (
+              <span style={{
+                fontSize: '0.7rem',
+                background: '#FF9966',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '10px',
+                fontWeight: 'bold'
+              }}>
+                OFFLINE
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {/* Desktop Menu */}
+        <div className="navbar-menu">
+          <Link 
+            to="/dashboard" 
+            className={`nav-link ${isActive('/dashboard') && location.pathname === '/dashboard' ? 'active' : ''}`}
+          >
+            Dashboard
+          </Link>
+          <Link 
+            to="/dashboard/tours" 
+            className={`nav-link ${isActive('/dashboard/tours') ? 'active' : ''}`}
+          >
+            Browse Tours
+          </Link>
+          <Link 
+            to="/dashboard/saved" 
+            className={`nav-link ${isActive('/dashboard/saved') ? 'active' : ''}`}
+          >
+            Saved ({savedTours.length})
+          </Link>
+          <Link 
+            to="/dashboard/bookings" 
+            className={`nav-link ${isActive('/dashboard/bookings') ? 'active' : ''}`}
+          >
+            Bookings ({confirmedBookingsCount})
+          </Link>
+          <Link 
+            to="/dashboard/profile" 
+            className={`nav-link ${isActive('/dashboard/profile') ? 'active' : ''}`}
+          >
+            Profile
+          </Link>
+        </div>
+        
+        <div className="navbar-user">
+          {user && (
+            <>
+              <span className="welcome-text">
+                <span style={{ marginRight: '8px' }}>👋</span>
+                Hi, {user.name.split(' ')[0]}!
+              </span>
+              <button onClick={handleLogout} className="logout-btn">Logout</button>
+            </>
+          )}
+        </div>
+        
+        {/* Mobile Hamburger Menu Button */}
+        <button 
+          className={`mobile-menu-btn ${showMobileMenu ? 'active' : ''}`}
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <>
+          <div className={`mobile-menu-overlay ${showMobileMenu ? 'active' : ''}`} onClick={closeMobileMenu}></div>
+          
+          {/* Mobile Menu Sidebar */}
+          <div className={`mobile-menu-sidebar ${showMobileMenu ? 'active' : ''}`}>
+            <div className="mobile-menu-header">
+              <h3>TourVista Menu</h3>
+              <button className="mobile-menu-close" onClick={closeMobileMenu}>×</button>
+            </div>
+            
+            <div className="mobile-menu-content">
+              {/* Welcome Message - MOVED TO MIDDLE (after header, before navigation) */}
+              {user && (
+                <div className="mobile-welcome-message">
+                  <p>
+                    <span style={{ marginRight: '8px' }}>👋</span>
+                    Welcome, <span>{user.name.split(' ')[0]}!</span>
+                  </p>
+                  {connectionStatus === 'offline' && (
+                    <p style={{ fontSize: '0.8rem', color: '#FF9966', marginTop: '5px' }}>
+                      Offline Mode
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Mobile Navigation Links */}
+              <div className="navbar-menu">
+                <Link 
+                  to="/dashboard" 
+                  className={`nav-link ${isActive('/dashboard') && location.pathname === '/dashboard' ? 'active' : ''}`}
+                  onClick={() => handleMobileLinkClick('/dashboard')}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/dashboard/tours" 
+                  className={`nav-link ${isActive('/dashboard/tours') ? 'active' : ''}`}
+                  onClick={() => handleMobileLinkClick('/dashboard/tours')}
+                >
+                  Browse Tours
+                </Link>
+                <Link 
+                  to="/dashboard/saved" 
+                  className={`nav-link ${isActive('/dashboard/saved') ? 'active' : ''}`}
+                  onClick={() => handleMobileLinkClick('/dashboard/saved')}
+                >
+                  Saved <span className="badge">{savedTours.length}</span>
+                </Link>
+                <Link 
+                  to="/dashboard/bookings" 
+                  className={`nav-link ${isActive('/dashboard/bookings') ? 'active' : ''}`}
+                  onClick={() => handleMobileLinkClick('/dashboard/bookings')}
+                >
+                  Bookings <span className="badge">{confirmedBookingsCount}</span>
+                </Link>
+                <Link 
+                  to="/dashboard/profile" 
+                  className={`nav-link ${isActive('/dashboard/profile') ? 'active' : ''}`}
+                  onClick={() => handleMobileLinkClick('/dashboard/profile')}
+                >
+                  Profile
+                </Link>
+              </div>
+              
+              {/* Refresh Button for Mobile */}
+              <div style={{ padding: '1rem', marginBottom: '1rem' }}>
+                <button 
+                  onClick={() => {
+                    refreshDashboard();
+                    closeMobileMenu();
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.8rem',
+                    background: '#2E8B57',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <span>🔄</span> Refresh Data
+                </button>
+              </div>
+              
+              {/* Mobile User Section (only logout button now) */}
+              {user && (
+                <div className="mobile-user-section">
+                  <button 
+                    onClick={handleLogout} 
+                    className="mobile-logout-btn"
+                  >
+                    <span>🚪</span> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Connection Status Banner */}
+      {connectionStatus === 'offline' && (
+        <div style={{
+          background: '#FF9966',
+          color: 'white',
+          padding: '0.5rem',
+          textAlign: 'center',
+          fontSize: '0.9rem',
+          fontWeight: '500'
+        }}>
+          ⚠️ You are offline. Some features may be limited.
+        </div>
+      )}
+
+      {/* Main Content with Nested Routes */}
+      <main className="dashboard-main">
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <DashboardHome 
+                user={user} 
+                tours={tours} 
+                savedTours={savedTours}
+                userBookings={userBookings}
+                onBookTour={handleBookTour}
+                onSaveTour={handleSaveTour}
+              /> 
+            } 
+          />
+          <Route 
+            path="/tours" 
+            element={
+              <ToursPage 
+                tours={tours} 
+                savedTours={savedTours}
+                onBookTour={handleBookTour}
+                onSaveTour={handleSaveTour}
+              /> 
+            } 
+          />
+          <Route 
+            path="/saved" 
+            element={
+              <SavedToursPage 
+                savedTours={savedTours}
+                onBookTour={handleBookTour}
+                onSaveTour={handleSaveTour}
+              /> 
+            } 
+          />
+          <Route 
+            path="/bookings" 
+            element={
+              <BookingsPage 
+                user={user}
+                userBookings={userBookings} 
+                onCancelBooking={handleCancelBooking} 
+              /> 
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProfilePage 
+                user={user} 
+                userBookings={userBookings} 
+                savedTours={savedTours}
+                onEditProfile={handleEditProfile}
+              /> 
+            } 
+          />
+          <Route 
+            path="/tour/:id" 
+            element={
+              <TourDetailPage 
+                tours={tours} 
+                savedTours={savedTours}
+                onBookTour={handleBookTour}
+                onSaveTour={handleSaveTour}
+              /> 
+            } 
+          />
+          <Route path="/offers" element={<OffersPage />} />
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </main>
+
+      {/* Booking Modal */}
+      {showBookingModal && selectedTour && user && (
+        <BookingModal
+          tour={selectedTour}
+          user={user}
+          onClose={() => {
+            setShowBookingModal(false);
+            setSelectedTour(null);
+          }}
+          onConfirm={handleConfirmBooking}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <ToastNotification
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
+      {/* Footer */}
+      <footer className="dashboard-footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3>TourVista India</h3>
+            <p>Your gateway to authentic Indian travel experiences. Discover, plan, and book your perfect Indian journey.</p>
+          </div>
+          <div className="footer-section">
+            <h4>Dashboard Links</h4>
+            <Link to="/dashboard" className="footer-link">Dashboard Home</Link>
+            <Link to="/dashboard/tours" className="footer-link">Browse Indian Tours</Link>
+            <Link to="/dashboard/saved" className="footer-link">Saved Tours ({savedTours.length})</Link>
+            <Link to="/dashboard/bookings" className="footer-link">My Bookings ({confirmedBookingsCount})</Link>
+            <Link to="/dashboard/profile" className="footer-link">My Profile</Link>
+          </div>
+          <div className="footer-section">
+            <h4>Quick Actions</h4>
+            <button onClick={() => navigate('/dashboard/tours')} className="footer-btn">✈️ Find Tours</button>
+            <button onClick={() => navigate('/dashboard/saved')} className="footer-btn">💾 Saved Tours</button>
+            <button onClick={() => navigate('/dashboard/bookings')} className="footer-btn">📋 My Bookings</button>
+            <button onClick={handleHomeRedirect} className="footer-btn">🏠 Home Page</button>
+            <button onClick={handleLogout} className="footer-btn logout">🚪 Logout</button>
+            <button onClick={refreshDashboard} className="footer-btn" style={{ background: 'rgba(46, 139, 87, 0.1)', color: '#2E8B57' }}>
+              🔄 Refresh Data
+            </button>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; {new Date().getFullYear()} TourVista India Dashboard. Experience the diversity of India.</p>
+          <p style={{ fontSize: '0.85rem', opacity: 0.8, marginTop: '0.5rem' }}>
+            <button 
+              onClick={handleHomeRedirect}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: '#2E8B57', 
+                cursor: 'pointer', 
+                textDecoration: 'none',
+                padding: '0',
+                font: 'inherit'
+              }}
+            >
+              ← Return to Home Page
+            </button>
+          </p>
+          {connectionStatus === 'offline' && (
+            <p style={{ fontSize: '0.8rem', color: '#FF9966', marginTop: '0.5rem' }}>
+              ⚠️ Currently in offline mode
+            </p>
+          )}
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Dashboard;
