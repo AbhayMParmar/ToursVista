@@ -787,11 +787,11 @@ const ToursManagement = () => {
     // Overview
     overview: {
       highlights: [''],
-      groupSize: '2-10',
+      groupSize: '',
       difficulty: 'easy',
-      ageRange: '18-65',
-      bestSeason: 'October to March',
-      languages: ['English', 'Hindi']
+      ageRange: '',
+      bestSeason: '',
+      languages: []
     },
     
     // Included/Excluded
@@ -804,32 +804,32 @@ const ToursManagement = () => {
       title: '',
       description: '',
       activities: [''],
-      meals: 'Breakfast, Lunch, Dinner',
-      accommodation: 'Hotel'
+      meals: '',
+      accommodation: ''
     }],
     
     // Requirements
     requirements: {
-      physicalLevel: 'Moderate',
-      fitnessLevel: 'Average',
-      documents: ['Valid ID Proof'],
-      packingList: ['Comfortable shoes', 'Sun protection']
+      physicalLevel: '',
+      fitnessLevel: '',
+      documents: [''],
+      packingList: ['']
     },
     
     // Pricing
     pricing: {
       basePrice: '',
       discounts: [{ name: '', percentage: 0, description: '' }],
-      paymentPolicy: '50% advance payment required',
-      cancellationPolicy: 'Free cancellation 15 days before tour'
+      paymentPolicy: '',
+      cancellationPolicy: ''
     },
     
     // Important Info
     importantInfo: {
-      bookingCutoff: '7 days before tour date',
-      refundPolicy: 'Full refund for cancellations 15 days prior',
-      healthAdvisory: 'Consult doctor if you have health issues',
-      safetyMeasures: 'All safety protocols followed'
+      bookingCutoff: '',
+      refundPolicy: '',
+      healthAdvisory: '',
+      safetyMeasures: ''
     }
   });
   const tableContainerRef = useRef(null);
@@ -884,8 +884,8 @@ const ToursManagement = () => {
         title: item.title || `Day ${item.day}`,
         description: item.description || '',
         activities: item.activities.filter(a => a.trim() !== ''),
-        meals: item.meals || 'Breakfast',
-        accommodation: item.accommodation || 'Hotel'
+        meals: item.meals || '',
+        accommodation: item.accommodation || ''
       })),
       
       requirements: {
@@ -943,11 +943,11 @@ const ToursManagement = () => {
         
         overview: {
           highlights: [''],
-          groupSize: '2-10',
+          groupSize: '',
           difficulty: 'easy',
-          ageRange: '18-65',
-          bestSeason: 'October to March',
-          languages: ['English', 'Hindi']
+          ageRange: '',
+          bestSeason: '',
+          languages: []
         },
         
         included: [''],
@@ -958,29 +958,29 @@ const ToursManagement = () => {
           title: '',
           description: '',
           activities: [''],
-          meals: 'Breakfast, Lunch, Dinner',
-          accommodation: 'Hotel'
+          meals: '',
+          accommodation: ''
         }],
         
         requirements: {
-          physicalLevel: 'Moderate',
-          fitnessLevel: 'Average',
-          documents: ['Valid ID Proof'],
-          packingList: ['Comfortable shoes', 'Sun protection']
+          physicalLevel: '',
+          fitnessLevel: '',
+          documents: [''],
+          packingList: ['']
         },
         
         pricing: {
           basePrice: '',
           discounts: [{ name: '', percentage: 0, description: '' }],
-          paymentPolicy: '50% advance payment required',
-          cancellationPolicy: 'Free cancellation 15 days before tour'
+          paymentPolicy: '',
+          cancellationPolicy: ''
         },
         
         importantInfo: {
-          bookingCutoff: '7 days before tour date',
-          refundPolicy: 'Full refund for cancellations 15 days prior',
-          healthAdvisory: 'Consult doctor if you have health issues',
-          safetyMeasures: 'All safety protocols followed'
+          bookingCutoff: '',
+          refundPolicy: '',
+          healthAdvisory: '',
+          safetyMeasures: ''
         }
       });
     } catch (error) {
@@ -1010,11 +1010,11 @@ const ToursManagement = () => {
       
       overview: tour.overview || {
         highlights: [''],
-        groupSize: '2-10',
+        groupSize: '',
         difficulty: 'easy',
-        ageRange: '18-65',
-        bestSeason: 'October to March',
-        languages: ['English', 'Hindi']
+        ageRange: '',
+        bestSeason: '',
+        languages: []
       },
       
       included: tour.included?.length > 0 ? tour.included : [''],
@@ -1025,29 +1025,29 @@ const ToursManagement = () => {
         title: '',
         description: '',
         activities: [''],
-        meals: 'Breakfast, Lunch, Dinner',
-        accommodation: 'Hotel'
+        meals: '',
+        accommodation: ''
       }],
       
       requirements: tour.requirements || {
-        physicalLevel: 'Moderate',
-        fitnessLevel: 'Average',
-        documents: ['Valid ID Proof'],
-        packingList: ['Comfortable shoes', 'Sun protection']
+        physicalLevel: '',
+        fitnessLevel: '',
+        documents: [''],
+        packingList: ['']
       },
       
       pricing: tour.pricing || {
         basePrice: tour.price?.toString() || '',
         discounts: [{ name: '', percentage: 0, description: '' }],
-        paymentPolicy: '50% advance payment required',
-        cancellationPolicy: 'Free cancellation 15 days before tour'
+        paymentPolicy: '',
+        cancellationPolicy: ''
       },
       
       importantInfo: tour.importantInfo || {
-        bookingCutoff: '7 days before tour date',
-        refundPolicy: 'Full refund for cancellations 15 days prior',
-        healthAdvisory: 'Consult doctor if you have health issues',
-        safetyMeasures: 'All safety protocols followed'
+        bookingCutoff: '',
+        refundPolicy: '',
+        healthAdvisory: '',
+        safetyMeasures: ''
       }
     });
     setShowAddModal(true);
@@ -1154,8 +1154,8 @@ const ToursManagement = () => {
           title: '',
           description: '',
           activities: [''],
-          meals: 'Breakfast',
-          accommodation: 'Hotel'
+          meals: '',
+          accommodation: ''
         }
       ]
     }));
@@ -1193,11 +1193,11 @@ const ToursManagement = () => {
               
               overview: {
                 highlights: [''],
-                groupSize: '2-10',
+                groupSize: '',
                 difficulty: 'easy',
-                ageRange: '18-65',
-                bestSeason: 'October to March',
-                languages: ['English', 'Hindi']
+                ageRange: '',
+                bestSeason: '',
+                languages: []
               },
               
               included: [''],
@@ -1208,29 +1208,29 @@ const ToursManagement = () => {
                 title: '',
                 description: '',
                 activities: [''],
-                meals: 'Breakfast, Lunch, Dinner',
-                accommodation: 'Hotel'
+                meals: '',
+                accommodation: ''
               }],
               
               requirements: {
-                physicalLevel: 'Moderate',
-                fitnessLevel: 'Average',
-                documents: ['Valid ID Proof'],
-                packingList: ['Comfortable shoes', 'Sun protection']
+                physicalLevel: '',
+                fitnessLevel: '',
+                documents: [''],
+                packingList: ['']
               },
               
               pricing: {
                 basePrice: '',
                 discounts: [{ name: '', percentage: 0, description: '' }],
-                paymentPolicy: '50% advance payment required',
-                cancellationPolicy: 'Free cancellation 15 days before tour'
+                paymentPolicy: '',
+                cancellationPolicy: ''
               },
               
               importantInfo: {
-                bookingCutoff: '7 days before tour date',
-                refundPolicy: 'Full refund for cancellations 15 days prior',
-                healthAdvisory: 'Consult doctor if you have health issues',
-                safetyMeasures: 'All safety protocols followed'
+                bookingCutoff: '',
+                refundPolicy: '',
+                healthAdvisory: '',
+                safetyMeasures: ''
               }
             });
             setShowAddModal(true);
@@ -1459,7 +1459,7 @@ const ToursManagement = () => {
                 </div>
                 <div className="stat-card" style={{background: 'linear-gradient(135deg, #00b894, #00a085)'}}>
                   <h4>Group Size</h4>
-                  <p className="stat-number">{selectedTour.overview?.groupSize || '2-10'}</p>
+                  <p className="stat-number">{selectedTour.overview?.groupSize || 'Not specified'}</p>
                 </div>
                 <div className="stat-card" style={{background: 'linear-gradient(135deg, #fdcb6e, #f9a825)'}}>
                   <h4>Status</h4>
@@ -1480,12 +1480,12 @@ const ToursManagement = () => {
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Best Season</span>
-                    <span className="detail-value">{selectedTour.overview?.bestSeason}</span>
+                    <span className="detail-value">{selectedTour.overview?.bestSeason || 'Not specified'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Languages</span>
                     <span className="detail-value">
-                      {selectedTour.overview?.languages?.join(', ') || 'English, Hindi'}
+                      {selectedTour.overview?.languages?.join(', ') || 'Not specified'}
                     </span>
                   </div>
                 </div>
@@ -1494,19 +1494,19 @@ const ToursManagement = () => {
                   <h3><i>🎯</i> Tour Overview</h3>
                   <div className="detail-row">
                     <span className="detail-label">Difficulty</span>
-                    <span className="detail-value">{selectedTour.overview?.difficulty}</span>
+                    <span className="detail-value">{selectedTour.overview?.difficulty || 'Not specified'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Age Range</span>
-                    <span className="detail-value">{selectedTour.overview?.ageRange}</span>
+                    <span className="detail-value">{selectedTour.overview?.ageRange || 'Not specified'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Max Participants</span>
-                    <span className="detail-value">{selectedTour.maxParticipants}</span>
+                    <span className="detail-value">{selectedTour.maxParticipants || 'Not specified'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Current Bookings</span>
-                    <span className="detail-value">{selectedTour.currentParticipants}</span>
+                    <span className="detail-value">{selectedTour.currentParticipants || 0}</span>
                   </div>
                 </div>
               </div>
@@ -1514,7 +1514,7 @@ const ToursManagement = () => {
               <div className="detail-card">
                 <h3><i>📝</i> Detailed Description</h3>
                 <p style={{color: '#666', lineHeight: '1.6', margin: '0', whiteSpace: 'pre-line'}}>
-                  {selectedTour.detailedDescription || selectedTour.description}
+                  {selectedTour.detailedDescription || selectedTour.description || 'No detailed description provided'}
                 </p>
               </div>
               

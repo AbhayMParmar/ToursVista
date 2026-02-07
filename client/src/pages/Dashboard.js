@@ -1037,7 +1037,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component with CLICK FUNCTIONALITY - NO VIEW DETAILS BUTTON
+// Tour Card Component with CLICK FUNCTIONALITY - REMOVED MOBILE CLICK HINT
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -1147,10 +1147,6 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           >
             ⭐ Rate
           </button>
-        </div>
-        {/* Mobile Click Hint */}
-        <div className="mobile-click-hint">
-          Tap anywhere on card to view details
         </div>
       </div>
     </div>
@@ -1681,7 +1677,7 @@ const ProfilePage = ({ user, userBookings, savedTours, onEditProfile }) => {
   );
 };
 
-// Tour Detail Page Component - ENHANCED MOBILE RESPONSIVE DESIGN
+// Tour Detail Page Component - UPDATED to show only admin-added data
 const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour }) => {
   const location = useLocation();
   const tourId = location.pathname.split('/').pop();
@@ -1710,23 +1706,10 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
     );
   }
 
-  // Function to render itinerary
+  // Function to render itinerary - ONLY SHOW IF ADMIN HAS ADDED IT
   const renderItinerary = () => {
     if (!tour.itinerary || tour.itinerary.length === 0) {
-      return (
-        <div className="itinerary-day">
-          <div className="itinerary-day-header">
-            <h4>Day 1: Arrival & Orientation</h4>
-            <div className="itinerary-day-number">1</div>
-          </div>
-          <ul className="itinerary-activities">
-            <li>Arrival at destination airport</li>
-            <li>Hotel check-in and refresh</li>
-            <li>Welcome dinner with traditional cuisine</li>
-            <li>Briefing about the tour itinerary</li>
-          </ul>
-        </div>
-      );
+      return null; // Don't show itinerary section if admin hasn't added it
     }
 
     return tour.itinerary.map((day) => (
@@ -1750,8 +1733,8 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           fontSize: '0.9rem',
           color: '#666'
         }}>
-          <span><strong>Meals:</strong> {day.meals || 'Breakfast'}</span>
-          <span><strong>Accommodation:</strong> {day.accommodation || 'Hotel'}</span>
+          <span><strong>Meals:</strong> {day.meals}</span>
+          <span><strong>Accommodation:</strong> {day.accommodation}</span>
         </div>
       </div>
     ));
@@ -1939,53 +1922,61 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                 <div className="tour-meta-icon">📍</div>
                 <div>
                   <div className="tour-meta-label">Category</div>
-                  <div className="tour-meta-value">{tour.category || 'Cultural'}</div>
+                  <div className="tour-meta-value">{tour.category}</div>
                 </div>
               </div>
               
-              <div className="tour-meta-item">
-                <div className="tour-meta-icon">👥</div>
-                <div>
-                  <div className="tour-meta-label">Group Size</div>
-                  <div className="tour-meta-value">{tour.overview?.groupSize || '2-10 People'}</div>
-                </div>
-              </div>
-              
-              <div className="tour-meta-item">
-                <div className="tour-meta-icon">📅</div>
-                <div>
-                  <div className="tour-meta-label">Best Season</div>
-                  <div className="tour-meta-value">{tour.overview?.bestSeason || 'October to March'}</div>
-                </div>
-              </div>
-              
-              <div className="tour-meta-item">
-                <div className="tour-meta-icon">🎯</div>
-                <div>
-                  <div className="tour-meta-label">Difficulty</div>
-                  <div className="tour-meta-value" style={{ 
-                    color: tour.overview?.difficulty === 'easy' ? '#2E8B57' :
-                           tour.overview?.difficulty === 'moderate' ? '#FF9966' : '#FF6B6B',
-                    fontWeight: '600'
-                  }}>
-                    {tour.overview?.difficulty?.toUpperCase() || 'EASY'}
+              {tour.overview?.groupSize && (
+                <div className="tour-meta-item">
+                  <div className="tour-meta-icon">👥</div>
+                  <div>
+                    <div className="tour-meta-label">Group Size</div>
+                    <div className="tour-meta-value">{tour.overview.groupSize}</div>
                   </div>
                 </div>
-              </div>
+              )}
               
-              <div className="tour-meta-item">
-                <div className="tour-meta-icon">🗣️</div>
-                <div>
-                  <div className="tour-meta-label">Languages</div>
-                  <div className="tour-meta-value">
-                    {tour.overview?.languages?.join(', ') || 'English, Hindi'}
+              {tour.overview?.bestSeason && (
+                <div className="tour-meta-item">
+                  <div className="tour-meta-icon">📅</div>
+                  <div>
+                    <div className="tour-meta-label">Best Season</div>
+                    <div className="tour-meta-value">{tour.overview.bestSeason}</div>
                   </div>
                 </div>
-              </div>
+              )}
+              
+              {tour.overview?.difficulty && (
+                <div className="tour-meta-item">
+                  <div className="tour-meta-icon">🎯</div>
+                  <div>
+                    <div className="tour-meta-label">Difficulty</div>
+                    <div className="tour-meta-value" style={{ 
+                      color: tour.overview.difficulty === 'easy' ? '#2E8B57' :
+                             tour.overview.difficulty === 'moderate' ? '#FF9966' : '#FF6B6B',
+                      fontWeight: '600'
+                    }}>
+                      {tour.overview.difficulty.toUpperCase()}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {tour.overview?.languages && tour.overview.languages.length > 0 && (
+                <div className="tour-meta-item">
+                  <div className="tour-meta-icon">🗣️</div>
+                  <div>
+                    <div className="tour-meta-label">Languages</div>
+                    <div className="tour-meta-value">
+                      {tour.overview.languages.join(', ')}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Tour Highlights */}
+          {/* Tour Highlights - ONLY SHOW IF ADMIN HAS ADDED THEM */}
           {tour.overview?.highlights && tour.overview.highlights.length > 0 && (
             <div className="tour-detail-section">
               <h3 className="section-title">✨ Tour Highlights</h3>
@@ -2002,48 +1993,69 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
             </div>
           )}
 
-          <div className="tour-detail-section">
-            <h3 className="section-title">📅 Itinerary</h3>
-            <div className="tour-itinerary">
-              {renderItinerary()}
+          {/* Itinerary - ONLY SHOW IF ADMIN HAS ADDED IT */}
+          {tour.itinerary && tour.itinerary.length > 0 && (
+            <div className="tour-detail-section">
+              <h3 className="section-title">📅 Itinerary</h3>
+              <div className="tour-itinerary">
+                {renderItinerary()}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Requirements & Important Info */}
-          <div className="tour-detail-section">
-            <h3 className="section-title">📋 Important Information</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div>
-                <h4 style={{ color: '#333', marginBottom: '1rem' }}>Requirements</h4>
-                <div style={{ background: '#FFFAF5', padding: '1rem', borderRadius: '8px' }}>
-                  <p style={{ margin: '0.5rem 0' }}>
-                    <strong>Physical Level:</strong> {tour.requirements?.physicalLevel || 'Moderate'}
-                  </p>
-                  <p style={{ margin: '0.5rem 0' }}>
-                    <strong>Fitness Level:</strong> {tour.requirements?.fitnessLevel || 'Average'}
-                  </p>
-                  <p style={{ margin: '0.5rem 0' }}>
-                    <strong>Documents:</strong> {tour.requirements?.documents?.join(', ') || 'Valid ID Proof'}
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h4 style={{ color: '#333', marginBottom: '1rem' }}>Policies</h4>
-                <div style={{ background: '#FFFAF5', padding: '1rem', borderRadius: '8px' }}>
-                  <p style={{ margin: '0.5rem 0' }}>
-                    <strong>Cancellation:</strong> {tour.pricing?.cancellationPolicy || 'Free cancellation 7 days before'}
-                  </p>
-                  <p style={{ margin: '0.5rem 0' }}>
-                    <strong>Payment:</strong> {tour.pricing?.paymentPolicy || '30% advance required'}
-                  </p>
-                  <p style={{ margin: '0.5rem 0' }}>
-                    <strong>Booking Cutoff:</strong> {tour.importantInfo?.bookingCutoff || '7 days before tour'}
-                  </p>
-                </div>
+          {/* Requirements & Important Info - ONLY SHOW IF ADMIN HAS ADDED IT */}
+          {(tour.requirements || tour.pricing || tour.importantInfo) && (
+            <div className="tour-detail-section">
+              <h3 className="section-title">📋 Important Information</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                {tour.requirements && (
+                  <div>
+                    <h4 style={{ color: '#333', marginBottom: '1rem' }}>Requirements</h4>
+                    <div style={{ background: '#FFFAF5', padding: '1rem', borderRadius: '8px' }}>
+                      {tour.requirements.physicalLevel && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Physical Level:</strong> {tour.requirements.physicalLevel}
+                        </p>
+                      )}
+                      {tour.requirements.fitnessLevel && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Fitness Level:</strong> {tour.requirements.fitnessLevel}
+                        </p>
+                      )}
+                      {tour.requirements.documents && tour.requirements.documents.length > 0 && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Documents:</strong> {tour.requirements.documents.join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {(tour.pricing || tour.importantInfo) && (
+                  <div>
+                    <h4 style={{ color: '#333', marginBottom: '1rem' }}>Policies</h4>
+                    <div style={{ background: '#FFFAF5', padding: '1rem', borderRadius: '8px' }}>
+                      {tour.pricing?.cancellationPolicy && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Cancellation:</strong> {tour.pricing.cancellationPolicy}
+                        </p>
+                      )}
+                      {tour.pricing?.paymentPolicy && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Payment:</strong> {tour.pricing.paymentPolicy}
+                        </p>
+                      )}
+                      {tour.importantInfo?.bookingCutoff && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Booking Cutoff:</strong> {tour.importantInfo.bookingCutoff}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Customer Reviews */}
           {renderRatingsSection()}
@@ -2060,48 +2072,28 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                     <li key={index} className="included">{item}</li>
                   ))
                 ) : (
-                  <>
-                    <li className="included">Accommodation for all nights</li>
-                    <li className="included">Daily breakfast and 3 dinners</li>
-                    <li className="included">All transportation during tour</li>
-                    <li className="included">Professional tour guide</li>
-                    <li className="included">Entrance fees to all attractions</li>
-                  </>
+                  <li className="included">No inclusions specified</li>
                 )}
                 {tour.excluded && tour.excluded.length > 0 && tour.excluded.map((item, index) => (
                   <li key={`ex-${index}`} className="not-included">{item}</li>
                 ))}
-                {(!tour.excluded || tour.excluded.length === 0) && (
-                  <>
-                    <li className="not-included">International flights</li>
-                    <li className="not-included">Travel insurance</li>
-                    <li className="not-included">Personal expenses</li>
-                  </>
-                )}
               </ul>
             </div>
           </div>
 
-          <div className="tour-detail-section">
-            <h3 className="section-title">📦 Packing List</h3>
-            <div className="important-info-card">
-              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
-                {tour.requirements?.packingList && tour.requirements.packingList.length > 0 ? (
-                  tour.requirements.packingList.map((item, index) => (
+          {/* Packing List - ONLY SHOW IF ADMIN HAS ADDED IT */}
+          {tour.requirements?.packingList && tour.requirements.packingList.length > 0 && (
+            <div className="tour-detail-section">
+              <h3 className="section-title">📦 Packing List</h3>
+              <div className="important-info-card">
+                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
+                  {tour.requirements.packingList.map((item, index) => (
                     <li key={index} style={{ marginBottom: '0.5rem' }}>{item}</li>
-                  ))
-                ) : (
-                  <>
-                    <li style={{ marginBottom: '0.5rem' }}>Comfortable walking shoes</li>
-                    <li style={{ marginBottom: '0.5rem' }}>Lightweight clothing</li>
-                    <li style={{ marginBottom: '0.5rem' }}>Sun protection (hat, sunscreen)</li>
-                    <li style={{ marginBottom: '0.5rem' }}>Water bottle</li>
-                    <li style={{ marginBottom: '0.5rem' }}>Camera & charger</li>
-                  </>
-                )}
-              </ul>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="tour-detail-section">
             <h3 className="section-title">ℹ️ Quick Info</h3>
@@ -2112,9 +2104,11 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               <p style={{ margin: '0 0 0.5rem 0' }}>
                 <strong>🎯 Category:</strong> {tour.category}
               </p>
-              <p style={{ margin: '0 0 0.5rem 0' }}>
-                <strong>👥 Max Group:</strong> {tour.maxParticipants} people
-              </p>
+              {tour.maxParticipants && (
+                <p style={{ margin: '0 0 0.5rem 0' }}>
+                  <strong>👥 Max Group:</strong> {tour.maxParticipants} people
+                </p>
+              )}
               <p style={{ margin: '0 0 0.5rem 0' }}>
                 <strong>💰 Price:</strong> ₹{tour.price?.toLocaleString('en-IN')}/person
               </p>
