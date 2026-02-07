@@ -3,14 +3,39 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './auth.css';
 
+// Toast component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`auth-toast ${type}`}>
+      <div className="auth-toast-icon">
+        {type === 'success' ? '✓' : '✕'}
+      </div>
+      <div className="auth-toast-content">
+        <div className="auth-toast-title">
+          {type === 'success' ? 'Success' : 'Error'}
+        </div>
+        <div className="auth-toast-message">{message}</div>
+      </div>
+      <button className="auth-toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+};
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [toasts, setToasts] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
@@ -28,6 +53,15 @@ const Login = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const addToast = (message, type) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
   const onChange = (e) => {
     const { name, value } = e.target;
     
@@ -39,8 +73,6 @@ const Login = () => {
     } else {
       setFormData({ ...formData, [name]: value });
     }
-    
-    setError('');
   };
 
   // Email validation
@@ -57,8 +89,6 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
 
     // On mobile, blur active element to hide keyboard
     if (isMobile) {
@@ -75,7 +105,7 @@ const Login = () => {
     if (password.length > 10) errors.push('Password cannot exceed 10 characters');
     
     if (errors.length > 0) {
-      setError(errors.join('. '));
+      errors.forEach(error => addToast(error, 'error'));
       setLoading(false);
       return;
     }
@@ -99,7 +129,7 @@ const Login = () => {
         localStorage.setItem('allUsers', JSON.stringify(allUsers));
       }
 
-      setSuccess('Welcome Administrator! Redirecting to Admin Panel...');
+      addToast('Welcome Administrator! Redirecting to Admin Panel...', 'success');
       
       setTimeout(() => {
         navigate('/admin');
@@ -133,19 +163,19 @@ const Login = () => {
           localStorage.setItem('allUsers', JSON.stringify(allUsers));
         }
         
-        setSuccess('Login successful! Redirecting to Dashboard...');
+        addToast('Login successful! Redirecting to Dashboard...', 'success');
         
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
       } else {
-        setError(res.data.message || 'Login failed');
+        addToast(res.data.message || 'Login failed', 'error');
       }
     } catch (err) {
       if (err.code === 'ECONNABORTED') {
-        setError('Request timeout. Please try again.');
+        addToast('Request timeout. Please try again.', 'error');
       } else if (err.response) {
-        setError(err.response.data?.message || `Error: ${err.response.status}`);
+        addToast(err.response.data?.message || `Error: ${err.response.status}`, 'error');
       } else if (err.request) {
         const fallbackUrl = 'https://tours-travels-server-6mm7.onrender.com/api/auth/login';
         if (getApiBaseUrl() !== fallbackUrl) {
@@ -165,7 +195,7 @@ const Login = () => {
             if (fallbackRes.data.success) {
               localStorage.setItem('token', fallbackRes.data.token);
               localStorage.setItem('user', JSON.stringify(fallbackRes.data.user));
-              setSuccess('Login successful! Redirecting to Dashboard...');
+              addToast('Login successful! Redirecting to Dashboard...', 'success');
               setTimeout(() => {
                 navigate('/dashboard');
               }, 1500);
@@ -177,7 +207,7 @@ const Login = () => {
           handleFallbackError(err);
         }
       } else {
-        setError('Login failed. Please check your credentials and try again.');
+        addToast('Login failed. Please check your credentials and try again.', 'error');
       }
       console.error('Login error:', err);
     } finally {
@@ -187,16 +217,28 @@ const Login = () => {
 
   const handleFallbackError = (err) => {
     if (err.response?.status === 401) {
-      setError('Invalid email or password');
+      addToast('Invalid email or password', 'error');
     } else if (err.response?.status === 400) {
-      setError('Please check your input data');
+      addToast('Please check your input data', 'error');
     } else {
-      setError(`Login failed. Please try again.`);
+      addToast('Login failed. Please try again.', 'error');
     }
   };
 
   return (
     <div className="auth-page">
+      {/* Toast Container */}
+      <div className="auth-toast-container">
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+
       <div className="auth-container">
         <div className="auth-card-wrapper">
           <div className="split-card">
@@ -205,9 +247,6 @@ const Login = () => {
               <div className="auth-form">
                 <h2>Welcome to TourVista India</h2>
                 <p className="auth-subtitle">Login to your account</p>
-                
-                {error && <div className="alert alert-danger">{error}</div>}
-                {success && <div className="alert alert-success">{success}</div>}
                 
                 <form onSubmit={onSubmit}>
                   <div className="form-group">

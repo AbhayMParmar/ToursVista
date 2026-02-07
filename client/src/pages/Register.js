@@ -3,6 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './auth.css';
 
+// Toast component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`auth-toast ${type}`}>
+      <div className="auth-toast-icon">
+        {type === 'success' ? '✓' : '✕'}
+      </div>
+      <div className="auth-toast-content">
+        <div className="auth-toast-title">
+          {type === 'success' ? 'Success' : 'Error'}
+        </div>
+        <div className="auth-toast-message">{message}</div>
+      </div>
+      <button className="auth-toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+};
+
 const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
@@ -13,8 +39,7 @@ const Register = () => {
     });
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [toasts, setToasts] = useState([]);
     const [passwordStrength, setPasswordStrength] = useState('');
     const [isMobile, setIsMobile] = useState(false);
     const navigate = useNavigate();
@@ -31,6 +56,15 @@ const Register = () => {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    const addToast = (message, type) => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    };
+
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+    };
+
     const onChange = (e) => {
         const { name, value } = e.target;
         
@@ -44,8 +78,6 @@ const Register = () => {
         } else {
             setFormData({ ...formData, [name]: value });
         }
-        
-        setError('');
     };
 
     const checkPasswordStrength = (password) => {
@@ -84,8 +116,6 @@ const Register = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
-        setSuccess('');
 
         // On mobile, blur active element to hide keyboard
         if (isMobile) {
@@ -107,7 +137,7 @@ const Register = () => {
         if (formData.password !== formData.confirmPassword) errors.push('Passwords do not match');
         
         if (errors.length > 0) {
-            setError(errors.join('. '));
+            errors.forEach(error => addToast(error, 'error'));
             setLoading(false);
             return;
         }
@@ -123,13 +153,13 @@ const Register = () => {
             });
 
             if (res.data.success) {
-                setSuccess('Registration successful! Redirecting to login...');
+                addToast('Registration successful! Redirecting to login...', 'success');
                 setTimeout(() => {
                     navigate('/login');
                 }, 2000);
             }
         } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+            addToast(err.response?.data?.message || err.message || 'Registration failed. Please try again.', 'error');
             console.error('Registration error:', err);
         } finally {
             setLoading(false);
@@ -138,6 +168,18 @@ const Register = () => {
 
     return (
         <div className="auth-page register-page">
+            {/* Toast Container */}
+            <div className="auth-toast-container">
+                {toasts.map(toast => (
+                    <Toast
+                        key={toast.id}
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => removeToast(toast.id)}
+                    />
+                ))}
+            </div>
+
             <div className="auth-container">
                 <div className="auth-card-wrapper">
                     <div className="split-card">
@@ -164,9 +206,6 @@ const Register = () => {
                             <div className="auth-form">
                                 <h2>Create Account</h2>
                                 <p className="auth-subtitle">Join TourVista India and start your journey today</p>
-                                
-                                {error && <div className="alert alert-danger">{error}</div>}
-                                {success && <div className="alert alert-success">{success}</div>}
                                 
                                 <form onSubmit={onSubmit}>
                                     <div className="form-group">
