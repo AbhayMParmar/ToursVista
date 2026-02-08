@@ -159,7 +159,7 @@ const getTourRatings = async (tourId) => {
   try {
     const response = await fetchWithRetry(`${API_URL}/tours/${tourId}/ratings`);
     if (response.data.success) {
-      return response.data.data || [];
+      return response.data.data?.ratings || [];
     }
     return [];
   } catch (error) {
@@ -179,6 +179,102 @@ const checkUserRating = async (userId, tourId) => {
   } catch (error) {
     console.error('Error checking user rating:', error);
     return null;
+  }
+};
+
+// Get tours from database with complete data
+const getTours = async () => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/tours`);
+    if (response.data.success) {
+      const tours = response.data.data || [];
+      
+      // Ensure all tour data is properly structured for frontend
+      return tours.map(tour => ({
+        ...tour,
+        // Ensure nested objects exist with defaults
+        overview: tour.overview || {
+          highlights: [],
+          groupSize: '',
+          difficulty: 'easy',
+          ageRange: '',
+          bestSeason: '',
+          languages: []
+        },
+        requirements: tour.requirements || {
+          physicalLevel: '',
+          fitnessLevel: '',
+          documents: [],
+          packingList: []
+        },
+        pricing: tour.pricing || {
+          basePrice: tour.price || 0,
+          discounts: [],
+          paymentPolicy: '',
+          cancellationPolicy: ''
+        },
+        importantInfo: tour.importantInfo || {
+          bookingCutoff: '',
+          refundPolicy: '',
+          healthAdvisory: '',
+          safetyMeasures: ''
+        },
+        // Ensure arrays exist
+        itinerary: tour.itinerary || [],
+        included: tour.included || [],
+        excluded: tour.excluded || [],
+        images: tour.images || [],
+        // Ensure rating properties
+        averageRating: tour.averageRating || 0,
+        totalRatings: tour.totalRatings || 0,
+        // Ensure basic properties
+        price: tour.price || 0,
+        duration: tour.duration || 'Not specified',
+        category: tour.category || 'Not specified',
+        region: tour.region || 'Not specified',
+        destination: tour.destination || tour.region || 'Not specified',
+        maxParticipants: tour.maxParticipants || 'Not specified',
+        currentParticipants: tour.currentParticipants || 0
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching tours:', error);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Server is taking too long to respond. Please try again.');
+    }
+    return [];
+  }
+};
+
+// Get user bookings from database with retry
+const getUserBookings = async (userId) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/bookings/user/${userId}`);
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Error fetching user bookings:', error);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Unable to load bookings. Please try again.');
+    }
+    return [];
+  }
+};
+
+// Update booking status in database
+const updateBookingStatus = async (bookingId, status) => {
+  try {
+    const response = await fetchWithRetry(`${API_URL}/bookings/${bookingId}`, {
+      method: 'PUT',
+      data: { status }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Request timeout. Please try again.');
+    }
+    throw error;
   }
 };
 
@@ -637,77 +733,6 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
   );
 };
 
-// Get tours from database with retry - ENHANCED to fetch all data
-const getTours = async () => {
-  try {
-    const response = await fetchWithRetry(`${API_URL}/tours`);
-    if (response.data.success) {
-      const tours = response.data.data || [];
-      // Ensure all tour data is properly structured
-      return tours.map(tour => ({
-        ...tour,
-        // Ensure nested objects exist
-        overview: tour.overview || {},
-        requirements: tour.requirements || {},
-        pricing: tour.pricing || {},
-        importantInfo: tour.importantInfo || {},
-        // Ensure arrays exist
-        itinerary: tour.itinerary || [],
-        included: tour.included || [],
-        excluded: tour.excluded || [],
-        images: tour.images || [],
-        // Ensure rating properties
-        averageRating: tour.averageRating || 0,
-        totalRatings: tour.totalRatings || 0,
-        // Ensure basic properties
-        price: tour.price || 0,
-        duration: tour.duration || 'Not specified',
-        category: tour.category || 'Not specified',
-        region: tour.region || 'Not specified',
-        destination: tour.destination || tour.region || 'Not specified'
-      }));
-    }
-    return [];
-  } catch (error) {
-    console.error('Error fetching tours:', error);
-    if (error.code === 'ECONNABORTED') {
-      throw new Error('Server is taking too long to respond. Please try again.');
-    }
-    return [];
-  }
-};
-
-// Get user bookings from database with retry
-const getUserBookings = async (userId) => {
-  try {
-    const response = await fetchWithRetry(`${API_URL}/bookings/user/${userId}`);
-    return response.data.data || [];
-  } catch (error) {
-    console.error('Error fetching user bookings:', error);
-    if (error.code === 'ECONNABORTED') {
-      throw new Error('Unable to load bookings. Please try again.');
-    }
-    return [];
-  }
-};
-
-// Update booking status in database
-const updateBookingStatus = async (bookingId, status) => {
-  try {
-    const response = await fetchWithRetry(`${API_URL}/bookings/${bookingId}`, {
-      method: 'PUT',
-      data: { status }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating booking:', error);
-    if (error.code === 'ECONNABORTED') {
-      throw new Error('Request timeout. Please try again.');
-    }
-    throw error;
-  }
-};
-
 // Booking Modal Component - FIXED to create confirmed booking
 const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   const [bookingData, setBookingData] = useState({
@@ -1063,7 +1088,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component with CLICK FUNCTIONALITY - REMOVED MOBILE CLICK HINT
+// Tour Card Component with CLICK FUNCTIONALITY
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -1329,7 +1354,7 @@ const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSa
   );
 };
 
-// My Bookings Page Component - FIXED to show confirmed bookings with WORKING FILTER BUTTONS
+// My Bookings Page Component
 const BookingsPage = ({ user, userBookings, onCancelBooking }) => {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'confirmed', 'cancelled'
   
@@ -1723,19 +1748,46 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           const response = await fetchWithRetry(`${API_URL}/tours/${tourId}`);
           if (response.data.success) {
             const tourData = response.data.data;
-            // Ensure all data is properly structured
+            
+            // Format tour data with all admin-added fields
             const formattedTour = {
               ...tourData,
-              overview: tourData.overview || {},
-              requirements: tourData.requirements || {},
-              pricing: tourData.pricing || {},
-              importantInfo: tourData.importantInfo || {},
+              // Ensure all nested objects exist with defaults
+              overview: tourData.overview || {
+                highlights: [],
+                groupSize: '',
+                difficulty: 'easy',
+                ageRange: '',
+                bestSeason: '',
+                languages: []
+              },
+              requirements: tourData.requirements || {
+                physicalLevel: '',
+                fitnessLevel: '',
+                documents: [],
+                packingList: []
+              },
+              pricing: tourData.pricing || {
+                basePrice: tourData.price || 0,
+                discounts: [],
+                paymentPolicy: '',
+                cancellationPolicy: ''
+              },
+              importantInfo: tourData.importantInfo || {
+                bookingCutoff: '',
+                refundPolicy: '',
+                healthAdvisory: '',
+                safetyMeasures: ''
+              },
+              // Ensure arrays exist
               itinerary: tourData.itinerary || [],
               included: tourData.included || [],
               excluded: tourData.excluded || [],
               images: tourData.images || [],
+              // Ensure rating properties
               averageRating: tourData.averageRating || 0,
               totalRatings: tourData.totalRatings || 0,
+              // Ensure basic properties
               price: tourData.price || 0,
               duration: tourData.duration || 'Not specified',
               category: tourData.category || 'Not specified',
@@ -1743,6 +1795,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               destination: tourData.destination || tourData.region || 'Not specified',
               maxParticipants: tourData.maxParticipants || 'Not specified'
             };
+            
             setTourDetails(formattedTour);
             
             // Fetch ratings
@@ -1784,7 +1837,17 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
   // Function to render itinerary
   const renderItinerary = () => {
     if (!tourDetails.itinerary || tourDetails.itinerary.length === 0) {
-      return null;
+      return (
+        <div style={{ 
+          background: '#FFFAF5', 
+          padding: '1.5rem', 
+          borderRadius: '10px',
+          textAlign: 'center',
+          color: '#666'
+        }}>
+          <p style={{ margin: 0 }}>Detailed itinerary not available for this tour.</p>
+        </div>
+      );
     }
 
     return tourDetails.itinerary.map((day) => (
@@ -1932,6 +1995,136 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
     );
   };
 
+  // Function to render highlights
+  const renderHighlights = () => {
+    if (!tourDetails.overview?.highlights || tourDetails.overview.highlights.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="tour-detail-section">
+        <h3 className="section-title">✨ Tour Highlights</h3>
+        <div className="tour-highlights">
+          {tourDetails.overview.highlights.map((highlight, index) => (
+            <div key={index} className="tour-highlight">
+              <div className="tour-highlight-icon">✨</div>
+              <div className="tour-highlight-content">
+                <p style={{ margin: 0, color: '#666' }}>{highlight}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Function to render included/excluded services
+  const renderServices = () => {
+    return (
+      <div className="tour-detail-section">
+        <h3 className="section-title">✅ Inclusions & Exclusions</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <div className="tour-inclusion-card">
+            <h4 style={{ color: '#2E8B57', marginBottom: '1rem' }}>What's Included</h4>
+            <ul className="inclusion-list">
+              {tourDetails.included && tourDetails.included.length > 0 ? (
+                tourDetails.included.map((item, index) => (
+                  <li key={index} className="included">{item}</li>
+                ))
+              ) : (
+                <li className="included">No inclusions specified</li>
+              )}
+            </ul>
+          </div>
+          
+          <div className="tour-inclusion-card" style={{ background: '#FFF5F5' }}>
+            <h4 style={{ color: '#FF6B6B', marginBottom: '1rem' }}>What's Not Included</h4>
+            <ul className="inclusion-list">
+              {tourDetails.excluded && tourDetails.excluded.length > 0 ? (
+                tourDetails.excluded.map((item, index) => (
+                  <li key={index} className="not-included">{item}</li>
+                ))
+              ) : (
+                <li className="not-included">No exclusions specified</li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Function to render tour overview meta
+  const renderTourMeta = () => {
+    return (
+      <div className="tour-meta-grid">
+        <div className="tour-meta-item">
+          <div className="tour-meta-icon">⏱️</div>
+          <div>
+            <div className="tour-meta-label">Duration</div>
+            <div className="tour-meta-value">{tourDetails.duration}</div>
+          </div>
+        </div>
+        
+        <div className="tour-meta-item">
+          <div className="tour-meta-icon">📍</div>
+          <div>
+            <div className="tour-meta-label">Category</div>
+            <div className="tour-meta-value">{tourDetails.category}</div>
+          </div>
+        </div>
+        
+        {tourDetails.overview?.groupSize && (
+          <div className="tour-meta-item">
+            <div className="tour-meta-icon">👥</div>
+            <div>
+              <div className="tour-meta-label">Group Size</div>
+              <div className="tour-meta-value">{tourDetails.overview.groupSize}</div>
+            </div>
+          </div>
+        )}
+        
+        {tourDetails.overview?.bestSeason && (
+          <div className="tour-meta-item">
+            <div className="tour-meta-icon">📅</div>
+            <div>
+              <div className="tour-meta-label">Best Season</div>
+              <div className="tour-meta-value">{tourDetails.overview.bestSeason}</div>
+            </div>
+          </div>
+        )}
+        
+        {tourDetails.overview?.difficulty && (
+          <div className="tour-meta-item">
+            <div className="tour-meta-icon">🎯</div>
+            <div>
+              <div className="tour-meta-label">Difficulty</div>
+              <div className="tour-meta-value" style={{ 
+                color: tourDetails.overview.difficulty === 'easy' ? '#2E8B57' :
+                       tourDetails.overview.difficulty === 'moderate' ? '#FF9966' : '#FF6B6B',
+                fontWeight: '600'
+              }}>
+                {tourDetails.overview.difficulty.toUpperCase()}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {tourDetails.overview?.languages && tourDetails.overview.languages.length > 0 && (
+          <div className="tour-meta-item">
+            <div className="tour-meta-icon">🗣️</div>
+            <div>
+              <div className="tour-meta-label">Languages</div>
+              <div className="tour-meta-value">
+                {tourDetails.overview.languages.join(', ')}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="page-content tour-detail-page">
       <div className="tour-detail-header">
@@ -1990,89 +2183,14 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               {tourDetails.detailedDescription || tourDetails.description}
             </p>
             
-            <div className="tour-meta-grid">
-              <div className="tour-meta-item">
-                <div className="tour-meta-icon">⏱️</div>
-                <div>
-                  <div className="tour-meta-label">Duration</div>
-                  <div className="tour-meta-value">{tourDetails.duration}</div>
-                </div>
-              </div>
-              
-              <div className="tour-meta-item">
-                <div className="tour-meta-icon">📍</div>
-                <div>
-                  <div className="tour-meta-label">Category</div>
-                  <div className="tour-meta-value">{tourDetails.category}</div>
-                </div>
-              </div>
-              
-              {tourDetails.overview?.groupSize && (
-                <div className="tour-meta-item">
-                  <div className="tour-meta-icon">👥</div>
-                  <div>
-                    <div className="tour-meta-label">Group Size</div>
-                    <div className="tour-meta-value">{tourDetails.overview.groupSize}</div>
-                  </div>
-                </div>
-              )}
-              
-              {tourDetails.overview?.bestSeason && (
-                <div className="tour-meta-item">
-                  <div className="tour-meta-icon">📅</div>
-                  <div>
-                    <div className="tour-meta-label">Best Season</div>
-                    <div className="tour-meta-value">{tourDetails.overview.bestSeason}</div>
-                  </div>
-                </div>
-              )}
-              
-              {tourDetails.overview?.difficulty && (
-                <div className="tour-meta-item">
-                  <div className="tour-meta-icon">🎯</div>
-                  <div>
-                    <div className="tour-meta-label">Difficulty</div>
-                    <div className="tour-meta-value" style={{ 
-                      color: tourDetails.overview.difficulty === 'easy' ? '#2E8B57' :
-                             tourDetails.overview.difficulty === 'moderate' ? '#FF9966' : '#FF6B6B',
-                      fontWeight: '600'
-                    }}>
-                      {tourDetails.overview.difficulty.toUpperCase()}
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {tourDetails.overview?.languages && tourDetails.overview.languages.length > 0 && (
-                <div className="tour-meta-item">
-                  <div className="tour-meta-icon">🗣️</div>
-                  <div>
-                    <div className="tour-meta-label">Languages</div>
-                    <div className="tour-meta-value">
-                      {tourDetails.overview.languages.join(', ')}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {renderTourMeta()}
           </div>
 
           {/* Tour Highlights */}
-          {tourDetails.overview?.highlights && tourDetails.overview.highlights.length > 0 && (
-            <div className="tour-detail-section">
-              <h3 className="section-title">✨ Tour Highlights</h3>
-              <div className="tour-highlights">
-                {tourDetails.overview.highlights.map((highlight, index) => (
-                  <div key={index} className="tour-highlight">
-                    <div className="tour-highlight-icon">✨</div>
-                    <div className="tour-highlight-content">
-                      <p style={{ margin: 0, color: '#666' }}>{highlight}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {renderHighlights()}
+
+          {/* Included/Excluded Services */}
+          {renderServices()}
 
           {/* Itinerary */}
           {tourDetails.itinerary && tourDetails.itinerary.length > 0 && (
@@ -2104,9 +2222,24 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                         </p>
                       )}
                       {tourDetails.requirements.documents && tourDetails.requirements.documents.length > 0 && (
-                        <p style={{ margin: '0.5rem 0' }}>
-                          <strong>Documents:</strong> {tourDetails.requirements.documents.join(', ')}
-                        </p>
+                        <div style={{ margin: '0.5rem 0' }}>
+                          <strong>Documents:</strong>
+                          <ul style={{ margin: '0.25rem 0 0 1.5rem', color: '#666' }}>
+                            {tourDetails.requirements.documents.map((doc, index) => (
+                              <li key={index}>{doc}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {tourDetails.requirements.packingList && tourDetails.requirements.packingList.length > 0 && (
+                        <div style={{ margin: '0.5rem 0' }}>
+                          <strong>Packing List:</strong>
+                          <ul style={{ margin: '0.25rem 0 0 1.5rem', color: '#666' }}>
+                            {tourDetails.requirements.packingList.map((item, index) => (
+                              <li key={index}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -2131,9 +2264,57 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                           <strong>Booking Cutoff:</strong> {tourDetails.importantInfo.bookingCutoff}
                         </p>
                       )}
+                      {tourDetails.importantInfo?.refundPolicy && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Refund Policy:</strong> {tourDetails.importantInfo.refundPolicy}
+                        </p>
+                      )}
+                      {tourDetails.importantInfo?.healthAdvisory && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Health Advisory:</strong> {tourDetails.importantInfo.healthAdvisory}
+                        </p>
+                      )}
+                      {tourDetails.importantInfo?.safetyMeasures && (
+                        <p style={{ margin: '0.5rem 0' }}>
+                          <strong>Safety Measures:</strong> {tourDetails.importantInfo.safetyMeasures}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Images */}
+          {tourDetails.images && tourDetails.images.length > 0 && (
+            <div className="tour-detail-section">
+              <h3 className="section-title">🖼️ Tour Gallery</h3>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                gap: '1rem',
+                marginTop: '1rem'
+              }}>
+                {tourDetails.images.map((img, index) => (
+                  <img 
+                    key={index}
+                    src={img} 
+                    alt={`${tourDetails.title} ${index + 1}`}
+                    style={{
+                      width: '100%',
+                      height: '150px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      border: '1px solid #eee',
+                      cursor: 'pointer'
+                    }}
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/200x150?text=Tour+Image';
+                    }}
+                    onClick={() => window.open(img, '_blank')}
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -2144,40 +2325,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
 
         <div className="tour-detail-sidebar">
           <div className="tour-detail-section">
-            <h3 className="section-title">✅ Inclusions</h3>
-            <div className="tour-inclusion-card">
-              <h4>What's Included</h4>
-              <ul className="inclusion-list">
-                {tourDetails.included && tourDetails.included.length > 0 ? (
-                  tourDetails.included.map((item, index) => (
-                    <li key={index} className="included">{item}</li>
-                  ))
-                ) : (
-                  <li className="included">No inclusions specified</li>
-                )}
-                {tourDetails.excluded && tourDetails.excluded.length > 0 && tourDetails.excluded.map((item, index) => (
-                  <li key={`ex-${index}`} className="not-included">{item}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Packing List */}
-          {tourDetails.requirements?.packingList && tourDetails.requirements.packingList.length > 0 && (
-            <div className="tour-detail-section">
-              <h3 className="section-title">📦 Packing List</h3>
-              <div className="important-info-card">
-                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
-                  {tourDetails.requirements.packingList.map((item, index) => (
-                    <li key={index} style={{ marginBottom: '0.5rem' }}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
-          <div className="tour-detail-section">
-            <h3 className="section-title">ℹ️ Quick Info</h3>
+            <h3 className="section-title">📋 Quick Info</h3>
             <div className="important-info-card">
               <p style={{ margin: '0 0 0.5rem 0' }}>
                 <strong>📍 Region:</strong> {tourDetails.region?.toUpperCase()} India
@@ -2196,11 +2344,40 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               <p style={{ margin: '0 0 0.5rem 0' }}>
                 <strong>⏱️ Duration:</strong> {tourDetails.duration}
               </p>
+              {tourDetails.overview?.ageRange && (
+                <p style={{ margin: '0 0 0.5rem 0' }}>
+                  <strong>👶 Age Range:</strong> {tourDetails.overview.ageRange}
+                </p>
+              )}
               <p style={{ margin: '0' }}>
                 <strong>⭐ Rating:</strong> {tourDetails.averageRating?.toFixed(1) || '0.0'} ({tourDetails.totalRatings || 0} reviews)
               </p>
             </div>
           </div>
+
+          {/* Pricing Details */}
+          {tourDetails.pricing && (
+            <div className="tour-detail-section">
+              <h3 className="section-title">💰 Pricing Details</h3>
+              <div className="important-info-card">
+                <p style={{ margin: '0 0 0.5rem 0' }}>
+                  <strong>Base Price:</strong> ₹{tourDetails.pricing.basePrice?.toLocaleString('en-IN') || tourDetails.price?.toLocaleString('en-IN')}
+                </p>
+                {tourDetails.pricing.discounts && tourDetails.pricing.discounts.length > 0 && (
+                  <div style={{ margin: '0.5rem 0' }}>
+                    <strong>Available Discounts:</strong>
+                    <ul style={{ margin: '0.25rem 0 0 1rem', padding: 0 }}>
+                      {tourDetails.pricing.discounts.map((discount, index) => (
+                        <li key={index} style={{ marginBottom: '0.25rem', color: '#666' }}>
+                          {discount.name}: {discount.percentage}% - {discount.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -2387,17 +2564,20 @@ const Dashboard = () => {
   const loadToursWithDetails = async () => {
     try {
       const allTours = await getTours();
-      console.log('📊 Loaded tours:', allTours.length);
+      console.log('📊 Loaded tours with complete data:', allTours.length);
       
-      // Log first tour to see its structure
+      // Log first tour to verify data structure
       if (allTours.length > 0) {
         console.log('🔍 First tour structure:', {
           id: allTours[0]._id,
           title: allTours[0].title,
-          overview: allTours[0].overview,
-          itinerary: allTours[0].itinerary,
-          included: allTours[0].included,
-          requirements: allTours[0].requirements
+          hasOverview: !!allTours[0].overview,
+          overviewHighlights: allTours[0].overview?.highlights?.length || 0,
+          hasItinerary: !!allTours[0].itinerary,
+          itineraryLength: allTours[0].itinerary?.length || 0,
+          hasIncluded: !!allTours[0].included,
+          includedLength: allTours[0].included?.length || 0,
+          hasRequirements: !!allTours[0].requirements
         });
       }
       

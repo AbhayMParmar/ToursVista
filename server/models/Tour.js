@@ -3,23 +3,29 @@ const mongoose = require('mongoose');
 const tourSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true
+    required: [true, 'Tour title is required']
   },
   description: {
     type: String,
-    required: true
+    required: [true, 'Tour description is required']
   },
   detailedDescription: {
     type: String,
-    required: false
+    default: ''
   },
   price: {
     type: Number,
-    required: true
+    required: [true, 'Tour price is required'],
+    min: [0, 'Price cannot be negative']
   },
   duration: {
     type: String,
-    required: true
+    required: [true, 'Tour duration is required']
+  },
+  image: {
+    type: String,
+    required: [true, 'Main image is required'],
+    default: 'https://via.placeholder.com/600x400?text=Tour+Image'
   },
   images: [{
     type: String
@@ -27,16 +33,18 @@ const tourSchema = new mongoose.Schema({
   region: {
     type: String,
     enum: ['north', 'south', 'west', 'east', 'central'],
-    default: 'north'
+    default: 'north',
+    required: true
   },
   category: {
     type: String,
     enum: ['heritage', 'adventure', 'beach', 'wellness', 'cultural', 'spiritual'],
-    default: 'heritage'
+    default: 'heritage',
+    required: true
   },
   destination: {
     type: String,
-    required: false
+    default: ''
   },
   
   // Tour Overview Details
@@ -63,7 +71,11 @@ const tourSchema = new mongoose.Schema({
   
   // Detailed Itinerary
   itinerary: [{
-    day: Number,
+    day: {
+      type: Number,
+      required: true,
+      min: 1
+    },
     title: String,
     description: String,
     activities: [String],
@@ -80,7 +92,8 @@ const tourSchema = new mongoose.Schema({
     rating: {
       type: Number,
       min: 1,
-      max: 5
+      max: 5,
+      required: true
     },
     review: String,
     date: {
@@ -90,11 +103,14 @@ const tourSchema = new mongoose.Schema({
   }],
   averageRating: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0,
+    max: 5
   },
   totalRatings: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
   
   // Tour Requirements
@@ -110,7 +126,11 @@ const tourSchema = new mongoose.Schema({
     basePrice: Number,
     discounts: [{
       name: String,
-      percentage: Number,
+      percentage: {
+        type: Number,
+        min: 0,
+        max: 100
+      },
       description: String
     }],
     paymentPolicy: String,
@@ -127,11 +147,13 @@ const tourSchema = new mongoose.Schema({
   
   maxParticipants: {
     type: Number,
-    default: 20
+    default: 20,
+    min: 1
   },
   currentParticipants: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
   availableDates: [{
     type: Date
@@ -153,6 +175,19 @@ const tourSchema = new mongoose.Schema({
 // Update the updatedAt field before saving
 tourSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
+  next();
+});
+
+// Calculate average rating before saving
+tourSchema.pre('save', function(next) {
+  if (this.ratings && this.ratings.length > 0) {
+    const total = this.ratings.reduce((sum, rating) => sum + rating.rating, 0);
+    this.averageRating = total / this.ratings.length;
+    this.totalRatings = this.ratings.length;
+  } else {
+    this.averageRating = 0;
+    this.totalRatings = 0;
+  }
   next();
 });
 
