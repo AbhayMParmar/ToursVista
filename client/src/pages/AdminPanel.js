@@ -6,7 +6,7 @@ import './admin.css';
 // Replace line 6:
 const API_URL = process.env.REACT_APP_API_URL || 'https://toursvista.onrender.com/api';
 
-// Helper Functions - UPDATED for MongoDB
+// Helper Functions - UPDATED for MongoDB with image handling
 const getUsers = async () => {
   try {
     const response = await axios.get(`${API_URL}/admin/users`);
@@ -115,14 +115,17 @@ const deleteBooking = async (bookingId) => {
   }
 };
 
-// Save tour to database
+// Save tour to database with enhanced image handling
 const saveTour = async (tourData) => {
   try {
-    console.log('📤 Sending tour data to backend:', JSON.stringify(tourData, null, 2));
+    console.log('📤 Saving tour with images:', {
+      mainImage: tourData.image,
+      additionalImages: tourData.images,
+      totalImages: tourData.images ? tourData.images.length : 0
+    });
     
     const response = await axios.post(`${API_URL}/tours`, tourData);
     console.log('✅ Tour saved successfully:', response.data);
-    
     return response.data;
   } catch (error) {
     console.error('❌ Error saving tour:', error.response?.data || error.message);
@@ -130,15 +133,18 @@ const saveTour = async (tourData) => {
   }
 };
 
-// Update tour in database
+// Update tour in database with enhanced image handling
 const updateTour = async (tourId, tourData) => {
   try {
     console.log('🔄 Updating tour:', tourId);
-    console.log('📝 Update data:', JSON.stringify(tourData, null, 2));
+    console.log('📝 Image data:', {
+      mainImage: tourData.image,
+      additionalImages: tourData.images,
+      totalImages: tourData.images ? tourData.images.length : 0
+    });
     
     const response = await axios.put(`${API_URL}/tours/${tourId}`, tourData);
     console.log('✅ Tour updated successfully:', response.data);
-    
     return response.data;
   } catch (error) {
     console.error('❌ Error updating tour:', error.response?.data || error.message);
@@ -773,7 +779,7 @@ const UsersManagement = () => {
   );
 };
 
-// Tours Management Component - UPDATED with enhanced form
+// Tours Management Component - UPDATED with enhanced form and image handling
 const ToursManagement = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -851,6 +857,19 @@ const ToursManagement = () => {
     try {
       setLoading(true);
       const allTours = await getTours();
+      console.log('📊 Loaded tours for admin:', allTours.length);
+      
+      // Log image information for debugging
+      allTours.forEach((tour, index) => {
+        console.log(`Tour ${index + 1}:`, {
+          title: tour.title,
+          hasImages: !!tour.images,
+          imagesCount: tour.images?.length || 0,
+          mainImage: tour.image,
+          allImages: tour.images
+        });
+      });
+      
       setTours(allTours);
     } catch (error) {
       console.error('Error fetching tours:', error);
@@ -863,15 +882,24 @@ const ToursManagement = () => {
   const handleSaveTour = async (e) => {
     e.preventDefault();
     
-    // Prepare tour data
+    // Validate images
+    const mainImage = tourForm.image.trim();
+    if (!mainImage) {
+      alert('Please provide a main image URL');
+      return;
+    }
+    
+    // Prepare tour data with image handling
     const tourData = {
       title: tourForm.title,
       description: tourForm.description,
       detailedDescription: tourForm.detailedDescription,
       price: parseInt(tourForm.price) || 0,
       duration: tourForm.duration,
-      image: tourForm.image,
-      images: tourForm.images.filter(img => img.trim() !== ''),
+      image: mainImage,
+      images: [mainImage, ...tourForm.images.filter(img => img.trim() !== '')].filter((img, index, array) => 
+        img && array.indexOf(img) === index // Remove duplicates
+      ),
       region: tourForm.region,
       category: tourForm.category,
       destination: tourForm.destination || `${tourForm.region} India`,
@@ -919,6 +947,12 @@ const ToursManagement = () => {
       }
     };
 
+    console.log('📦 Prepared tour data with images:', {
+      mainImage: tourData.image,
+      allImages: tourData.images,
+      imageCount: tourData.images.length
+    });
+
     try {
       if (editingTour) {
         // Update existing tour
@@ -938,64 +972,68 @@ const ToursManagement = () => {
       
       setShowAddModal(false);
       setEditingTour(null);
-      setTourForm({
-        title: '',
-        description: '',
-        detailedDescription: '',
-        price: '',
-        duration: '',
-        image: '',
-        images: [''],
-        region: 'north',
-        category: 'heritage',
-        destination: '',
-        
-        overview: {
-          highlights: [''],
-          groupSize: '',
-          difficulty: 'easy',
-          ageRange: '',
-          bestSeason: '',
-          languages: []
-        },
-        
-        included: [''],
-        excluded: [''],
-        
-        itinerary: [{
-          day: 1,
-          title: '',
-          description: '',
-          activities: [''],
-          meals: '',
-          accommodation: ''
-        }],
-        
-        requirements: {
-          physicalLevel: '',
-          fitnessLevel: '',
-          documents: [''],
-          packingList: ['']
-        },
-        
-        pricing: {
-          basePrice: '',
-          discounts: [{ name: '', percentage: 0, description: '' }],
-          paymentPolicy: '',
-          cancellationPolicy: ''
-        },
-        
-        importantInfo: {
-          bookingCutoff: '',
-          refundPolicy: '',
-          healthAdvisory: '',
-          safetyMeasures: ''
-        }
-      });
+      resetTourForm();
     } catch (error) {
       console.error('Error saving tour:', error);
       alert('Error saving tour. Please try again.');
     }
+  };
+
+  const resetTourForm = () => {
+    setTourForm({
+      title: '',
+      description: '',
+      detailedDescription: '',
+      price: '',
+      duration: '',
+      image: '',
+      images: [''],
+      region: 'north',
+      category: 'heritage',
+      destination: '',
+      
+      overview: {
+        highlights: [''],
+        groupSize: '',
+        difficulty: 'easy',
+        ageRange: '',
+        bestSeason: '',
+        languages: []
+      },
+      
+      included: [''],
+      excluded: [''],
+      
+      itinerary: [{
+        day: 1,
+        title: '',
+        description: '',
+        activities: [''],
+        meals: '',
+        accommodation: ''
+      }],
+      
+      requirements: {
+        physicalLevel: '',
+        fitnessLevel: '',
+        documents: [''],
+        packingList: ['']
+      },
+      
+      pricing: {
+        basePrice: '',
+        discounts: [{ name: '', percentage: 0, description: '' }],
+        paymentPolicy: '',
+        cancellationPolicy: ''
+      },
+      
+      importantInfo: {
+        bookingCutoff: '',
+        refundPolicy: '',
+        healthAdvisory: '',
+        safetyMeasures: ''
+      }
+    });
   };
 
   const handleRowClick = (tour) => {
@@ -1004,6 +1042,12 @@ const ToursManagement = () => {
   };
 
   const handleEditTour = (tour) => {
+    console.log('📝 Editing tour images:', {
+      mainImage: tour.image,
+      allImages: tour.images,
+      imageCount: tour.images?.length || 0
+    });
+    
     setEditingTour(tour);
     setTourForm({
       title: tour.title || '',
@@ -1012,7 +1056,7 @@ const ToursManagement = () => {
       price: tour.price?.toString() || '',
       duration: tour.duration || '',
       image: tour.image || '',
-      images: tour.images?.length > 0 ? tour.images : [''],
+      images: tour.images?.filter(img => img !== tour.image) || [''],
       region: tour.region || 'north',
       category: tour.category || 'heritage',
       destination: tour.destination || '',
@@ -1177,6 +1221,30 @@ const ToursManagement = () => {
     }));
   };
 
+  // Image preview handler
+  const handleImagePreview = (url) => {
+    if (!url) return null;
+    
+    try {
+      // Create a new image to check if it loads
+      const img = new Image();
+      img.src = url;
+      
+      img.onload = () => {
+        console.log('✅ Image loaded successfully:', url);
+      };
+      
+      img.onerror = () => {
+        console.log('❌ Failed to load image:', url);
+      };
+      
+      return url;
+    } catch (error) {
+      console.error('Error checking image:', error);
+      return 'https://via.placeholder.com/60x40?text=No+Image';
+    }
+  };
+
   return (
     <div className="admin-content">
       <div className="admin-header">
@@ -1188,60 +1256,7 @@ const ToursManagement = () => {
           className="btn-add"
           onClick={() => {
             setEditingTour(null);
-            setTourForm({
-              title: '',
-              description: '',
-              detailedDescription: '',
-              price: '',
-              duration: '',
-              image: '',
-              images: [''],
-              region: 'north',
-              category: 'heritage',
-              destination: '',
-              
-              overview: {
-                highlights: [''],
-                groupSize: '',
-                difficulty: 'easy',
-                ageRange: '',
-                bestSeason: '',
-                languages: []
-              },
-              
-              included: [''],
-              excluded: [''],
-              
-              itinerary: [{
-                day: 1,
-                title: '',
-                description: '',
-                activities: [''],
-                meals: '',
-                accommodation: ''
-              }],
-              
-              requirements: {
-                physicalLevel: '',
-                fitnessLevel: '',
-                documents: [''],
-                packingList: ['']
-              },
-              
-              pricing: {
-                basePrice: '',
-                discounts: [{ name: '', percentage: 0, description: '' }],
-                paymentPolicy: '',
-                cancellationPolicy: ''
-              },
-              
-              importantInfo: {
-                bookingCutoff: '',
-                refundPolicy: '',
-                healthAdvisory: '',
-                safetyMeasures: ''
-              }
-            });
+            resetTourForm();
             setShowAddModal(true);
           }}
         >
@@ -1281,12 +1296,15 @@ const ToursManagement = () => {
                       </td>
                       <td>
                         <img 
-                          src={tour.image} 
+                          src={tour.images && tour.images.length > 0 ? tour.images[0] : tour.image || 'https://via.placeholder.com/60x40?text=No+Image'} 
                           alt={tour.title}
                           className="tour-thumbnail"
                           onError={(e) => {
+                            console.log('❌ Failed to load tour image:', tour.image);
                             e.target.src = 'https://via.placeholder.com/60x40?text=No+Image';
+                            e.target.onerror = null; // Prevent infinite loop
                           }}
+                          loading="lazy"
                         />
                       </td>
                       <td>{tour.title}</td>
@@ -1360,12 +1378,15 @@ const ToursManagement = () => {
                     </td>
                     <td>
                       <img 
-                        src={tour.image} 
+                        src={tour.images && tour.images.length > 0 ? tour.images[0] : tour.image || 'https://via.placeholder.com/60x40?text=No+Image'} 
                         alt={tour.title}
                         className="tour-thumbnail"
                         onError={(e) => {
+                          console.log('❌ Failed to load tour image:', tour.image);
                           e.target.src = 'https://via.placeholder.com/60x40?text=No+Image';
+                          e.target.onerror = null; // Prevent infinite loop
                         }}
+                        loading="lazy"
                       />
                     </td>
                     <td>{tour.title}</td>
@@ -1416,7 +1437,7 @@ const ToursManagement = () => {
         </>
       )}
       
-      {/* Tour Details Modal */}
+      {/* Tour Details Modal - ENHANCED with image gallery */}
       {showTourDetails && selectedTour && (
         <div className="modal-overlay" onClick={() => setShowTourDetails(false)}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
@@ -1473,6 +1494,74 @@ const ToursManagement = () => {
                 <div className="stat-card" style={{background: 'linear-gradient(135deg, #fdcb6e, #f9a825)'}}>
                   <h4>Status</h4>
                   <p className="stat-badge active">Active</p>
+                </div>
+              </div>
+              
+              {/* Image Gallery Section */}
+              <div className="detail-card">
+                <h3><i>🖼️</i> Tour Images ({selectedTour.images ? selectedTour.images.length : 1})</h3>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '1rem', 
+                  overflowX: 'auto', 
+                  padding: '1rem 0',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#2E8B57 #f0f0f0'
+                }}>
+                  {selectedTour.images && selectedTour.images.length > 0 ? (
+                    selectedTour.images.map((img, index) => (
+                      <div key={index} style={{ 
+                        position: 'relative',
+                        flexShrink: 0,
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        border: index === 0 ? '3px solid #2E8B57' : '1px solid #eee'
+                      }}>
+                        <img 
+                          src={img} 
+                          alt={`${selectedTour.title} ${index + 1}`}
+                          style={{
+                            width: '200px',
+                            height: '150px',
+                            objectFit: 'cover',
+                            display: 'block'
+                          }}
+                          onError={(e) => {
+                            console.log('❌ Failed to load gallery image:', img);
+                            e.target.src = 'https://via.placeholder.com/200x150?text=Image+Error';
+                            e.target.onerror = null;
+                          }}
+                          loading="lazy"
+                        />
+                        {index === 0 && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            left: '8px',
+                            background: '#2E8B57',
+                            color: 'white',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold'
+                          }}>
+                            Main
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ 
+                      width: '100%', 
+                      textAlign: 'center', 
+                      padding: '2rem',
+                      background: '#FFFAF5',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🖼️</div>
+                      <p style={{ color: '#666' }}>No images available for this tour</p>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -1541,46 +1630,6 @@ const ToursManagement = () => {
                 </div>
               )}
               
-              <div className="detail-card">
-                <h3><i>🖼️</i> Tour Images</h3>
-                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', padding: '1rem 0' }}>
-                  {selectedTour.images && selectedTour.images.length > 0 ? (
-                    selectedTour.images.map((img, index) => (
-                      <img 
-                        key={index}
-                        src={img} 
-                        alt={`${selectedTour.title} ${index + 1}`}
-                        style={{
-                          width: '150px',
-                          height: '100px',
-                          objectFit: 'cover',
-                          borderRadius: '8px',
-                          border: '1px solid #eee'
-                        }}
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/150x100?text=Tour+Image';
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <img 
-                      src={selectedTour.image} 
-                      alt={selectedTour.title}
-                      style={{
-                        width: '100%',
-                        maxWidth: '400px',
-                        height: 'auto',
-                        borderRadius: '8px',
-                        border: '1px solid #eee'
-                      }}
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/400x250?text=Tour+Image';
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-              
               <div className="modal-actions">
                 <button 
                   type="button" 
@@ -1618,7 +1667,7 @@ const ToursManagement = () => {
         </div>
       )}
       
-      {/* Add/Edit Tour Modal - ENHANCED */}
+      {/* Add/Edit Tour Modal - ENHANCED with image preview */}
       {showAddModal && (
         <div className="modal-overlay">
           <div className="modal-content large-modal" style={{ maxWidth: '900px', maxHeight: '90vh' }}>
@@ -1728,6 +1777,7 @@ const ToursManagement = () => {
                     </div>
                   </div>
                   
+                  {/* Main Image */}
                   <div className="form-group">
                     <label>Main Image URL *</label>
                     <input
@@ -1737,23 +1787,68 @@ const ToursManagement = () => {
                       required
                       placeholder="Enter main image URL"
                     />
+                    {tourForm.image && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.25rem' }}>Preview:</p>
+                        <img 
+                          src={tourForm.image} 
+                          alt="Main image preview"
+                          style={{
+                            width: '100px',
+                            height: '80px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            border: '1px solid #ddd'
+                          }}
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/100x80?text=Invalid+URL';
+                            e.target.onerror = null;
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                   
+                  {/* Additional Images */}
                   <div className="form-group">
                     <label>Additional Image URLs</label>
+                    <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                      Add extra images for the tour gallery
+                    </p>
                     {tourForm.images.map((img, index) => (
-                      <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                        <input
-                          type="url"
-                          value={img}
-                          onChange={(e) => {
-                            const newImages = [...tourForm.images];
-                            newImages[index] = e.target.value;
-                            setTourForm({...tourForm, images: newImages});
-                          }}
-                          placeholder="Enter image URL"
-                          style={{ flex: 1 }}
-                        />
+                      <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1 }}>
+                          <input
+                            type="url"
+                            value={img}
+                            onChange={(e) => {
+                              const newImages = [...tourForm.images];
+                              newImages[index] = e.target.value;
+                              setTourForm({...tourForm, images: newImages});
+                            }}
+                            placeholder="Enter additional image URL"
+                            style={{ width: '100%' }}
+                          />
+                          {img && (
+                            <div style={{ marginTop: '0.25rem' }}>
+                              <img 
+                                src={img} 
+                                alt={`Preview ${index + 1}`}
+                                style={{
+                                  width: '80px',
+                                  height: '60px',
+                                  objectFit: 'cover',
+                                  borderRadius: '4px',
+                                  border: '1px solid #ddd'
+                                }}
+                                onError={(e) => {
+                                  e.target.src = 'https://via.placeholder.com/80x60?text=Invalid+URL';
+                                  e.target.onerror = null;
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeArrayItem('images', index)}
@@ -1763,7 +1858,8 @@ const ToursManagement = () => {
                             color: 'white',
                             border: 'none',
                             borderRadius: '5px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            alignSelf: 'flex-start'
                           }}
                         >
                           Remove
