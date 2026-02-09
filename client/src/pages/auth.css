@@ -43,16 +43,19 @@
     -ms-overflow-style: none;
 }
 
-/* Toast Notification Styles */
+/* UPDATED: Toast Notification Styles - Top Center */
 .auth-toast-container {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 9999;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 350px;
+    max-width: 450px;
+    width: 90%;
+    pointer-events: none;
 }
 
 .auth-toast {
@@ -61,40 +64,54 @@
     padding: 16px 20px;
     box-shadow: var(--shadow-xl);
     border-left: 4px solid;
-    animation: authToastSlideIn 0.3s ease forwards;
-    transform: translateX(100%);
+    animation: authToastSlideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform: translateY(-100%);
     opacity: 0;
     display: flex;
     align-items: center;
     gap: 12px;
     max-width: 100%;
+    pointer-events: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .auth-toast.hiding {
-    animation: authToastSlideOut 0.3s ease forwards;
+    animation: authToastSlideUp 0.3s ease forwards;
 }
 
 .auth-toast.success {
     border-left-color: var(--success-color);
-    background: linear-gradient(90deg, rgba(81, 207, 102, 0.1) 0%, rgba(81, 207, 102, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(81, 207, 102, 0.15) 0%, rgba(81, 207, 102, 0.05) 100%);
+    border: 1px solid rgba(81, 207, 102, 0.2);
 }
 
 .auth-toast.error {
     border-left-color: var(--danger-color);
-    background: linear-gradient(90deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 107, 107, 0.05) 100%);
+    border: 1px solid rgba(255, 107, 107, 0.2);
 }
 
 .auth-toast-icon {
     font-size: 20px;
     flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .auth-toast.success .auth-toast-icon {
     color: var(--success-color);
+    background: rgba(81, 207, 102, 0.1);
 }
 
 .auth-toast.error .auth-toast-icon {
     color: var(--danger-color);
+    background: rgba(255, 107, 107, 0.1);
 }
 
 .auth-toast-content {
@@ -102,55 +119,68 @@
 }
 
 .auth-toast-title {
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 15px;
     margin-bottom: 4px;
     color: var(--text-dark);
+    letter-spacing: 0.3px;
 }
 
 .auth-toast-message {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-muted);
     line-height: 1.4;
+    font-weight: 500;
 }
 
 .auth-toast-close {
     background: none;
     border: none;
     color: var(--text-muted);
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .auth-toast-close:hover {
     color: var(--text-dark);
     background: rgba(0, 0, 0, 0.05);
+    transform: rotate(90deg);
 }
 
-@keyframes authToastSlideIn {
+@keyframes authToastSlideDown {
     from {
-        transform: translateX(100%);
+        transform: translateY(-100%) translateX(-50%);
         opacity: 0;
     }
     to {
-        transform: translateX(0);
+        transform: translateY(0) translateX(-50%);
         opacity: 1;
     }
 }
 
-@keyframes authToastSlideOut {
+@keyframes authToastSlideUp {
     from {
-        transform: translateX(0);
+        transform: translateY(0) translateX(-50%);
         opacity: 1;
     }
     to {
-        transform: translateX(100%);
+        transform: translateY(-100%) translateX(-50%);
         opacity: 0;
     }
+}
+
+@keyframes authFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Scoping all styles to auth pages only */
@@ -497,11 +527,6 @@
     border: 1px solid transparent;
 }
 
-@keyframes authFadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 .auth-page .alert-danger {
     background: rgba(255, 107, 107, 0.1);
     color: #FF6B6B;
@@ -694,16 +719,20 @@
 
 /* MOBILE RESPONSIVE STYLES - ONLY FOR MOBILE DEVICES */
 @media (max-width: 768px) {
-    /* Toast adjustments for mobile */
+    /* UPDATED: Toast adjustments for mobile - Top Center */
     .auth-toast-container {
-        bottom: 10px;
-        right: 10px;
-        left: 10px;
-        max-width: 100%;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        bottom: auto;
+        max-width: 95%;
+        width: 95%;
     }
     
     .auth-toast {
         padding: 14px 16px;
+        width: 100%;
     }
     
     /* Mobile-specific container adjustments */
@@ -925,10 +954,12 @@
 
 /* Extra Small Mobile Devices */
 @media (max-width: 480px) {
+    /* UPDATED: Toast for extra small devices */
     .auth-toast-container {
-        bottom: 5px;
-        right: 5px;
-        left: 5px;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 98%;
     }
     
     .auth-toast {
@@ -1016,6 +1047,13 @@
 
 /* Mobile Landscape Mode */
 @media (max-height: 600px) and (orientation: landscape) {
+    /* UPDATED: Toast for landscape mode */
+    .auth-toast-container {
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
     .auth-page {
         display: flex;
         align-items: center;
@@ -1060,6 +1098,13 @@
 
 /* Tablet Devices (768px - 1024px) - Keep desktop design */
 @media (min-width: 769px) and (max-width: 1024px) {
+    /* Toast for tablet - Keep top center */
+    .auth-toast-container {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
     /* Tablet-specific adjustments */
     .auth-page .auth-container {
         padding: 2rem;

@@ -20,7 +20,7 @@ const Toast = ({ message, type, onClose }) => {
       </div>
       <div className="auth-toast-content">
         <div className="auth-toast-title">
-          {type === 'success' ? 'Success' : 'Error'}
+          {type === 'success' ? 'Success!' : 'Error!'}
         </div>
         <div className="auth-toast-message">{message}</div>
       </div>
@@ -168,7 +168,7 @@ const Register = () => {
 
     return (
         <div className="auth-page register-page">
-            {/* Toast Container */}
+            {/* UPDATED: Toast Container at Top Center */}
             <div className="auth-toast-container">
                 {toasts.map(toast => (
                     <Toast
