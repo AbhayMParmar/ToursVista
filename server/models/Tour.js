@@ -3,32 +3,41 @@ const mongoose = require('mongoose');
 const tourSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Tour title is required']
+    required: [true, 'Tour title is required'],
+    trim: true,
+    maxlength: [200, 'Tour title cannot exceed 200 characters']
   },
   description: {
     type: String,
-    required: [true, 'Tour description is required']
+    required: [true, 'Tour description is required'],
+    trim: true
   },
   detailedDescription: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   price: {
     type: Number,
     required: [true, 'Tour price is required'],
-    min: [0, 'Price cannot be negative']
+    min: [0, 'Price cannot be negative'],
+    default: 0
   },
   duration: {
     type: String,
-    required: [true, 'Tour duration is required']
+    required: [true, 'Tour duration is required'],
+    trim: true,
+    default: 'Not specified'
   },
   image: {
     type: String,
     required: [true, 'Main image is required'],
-    default: 'https://via.placeholder.com/600x400?text=Tour+Image'
+    default: 'https://via.placeholder.com/600x400?text=Tour+Image',
+    trim: true
   },
   images: [{
-    type: String
+    type: String,
+    trim: true
   }],
   region: {
     type: String,
@@ -44,30 +53,51 @@ const tourSchema = new mongoose.Schema({
   },
   destination: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   
   // Tour Overview Details
   overview: {
-    highlights: [String],
-    groupSize: String,
+    highlights: {
+      type: [String],
+      default: []
+    },
+    groupSize: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
     difficulty: {
       type: String,
       enum: ['easy', 'moderate', 'difficult'],
       default: 'easy'
     },
-    ageRange: String,
-    bestSeason: String,
-    languages: [String]
+    ageRange: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    bestSeason: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    languages: {
+      type: [String],
+      default: []
+    }
   },
   
   // Included/Excluded Services
-  included: [{
-    type: String
-  }],
-  excluded: [{
-    type: String
-  }],
+  included: {
+    type: [String],
+    default: []
+  },
+  excluded: {
+    type: [String],
+    default: []
+  },
   
   // Detailed Itinerary
   itinerary: [{
@@ -76,11 +106,30 @@ const tourSchema = new mongoose.Schema({
       required: true,
       min: 1
     },
-    title: String,
-    description: String,
-    activities: [String],
-    meals: String,
-    accommodation: String
+    title: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    description: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    activities: {
+      type: [String],
+      default: []
+    },
+    meals: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    accommodation: {
+      type: String,
+      default: '',
+      trim: true
+    }
   }],
   
   // Ratings & Reviews
@@ -95,7 +144,11 @@ const tourSchema = new mongoose.Schema({
       max: 5,
       required: true
     },
-    review: String,
+    review: {
+      type: String,
+      default: '',
+      trim: true
+    },
     date: {
       type: Date,
       default: Date.now
@@ -115,34 +168,84 @@ const tourSchema = new mongoose.Schema({
   
   // Tour Requirements
   requirements: {
-    physicalLevel: String,
-    fitnessLevel: String,
-    documents: [String],
-    packingList: [String]
+    physicalLevel: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    fitnessLevel: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    documents: {
+      type: [String],
+      default: []
+    },
+    packingList: {
+      type: [String],
+      default: []
+    }
   },
   
   // Pricing Details
   pricing: {
-    basePrice: Number,
+    basePrice: {
+      type: Number,
+      default: 0
+    },
     discounts: [{
-      name: String,
+      name: {
+        type: String,
+        default: '',
+        trim: true
+      },
       percentage: {
         type: Number,
         min: 0,
-        max: 100
+        max: 100,
+        default: 0
       },
-      description: String
+      description: {
+        type: String,
+        default: '',
+        trim: true
+      }
     }],
-    paymentPolicy: String,
-    cancellationPolicy: String
+    paymentPolicy: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    cancellationPolicy: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    }
   },
   
   // Important Information
   importantInfo: {
-    bookingCutoff: String,
-    refundPolicy: String,
-    healthAdvisory: String,
-    safetyMeasures: String
+    bookingCutoff: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    refundPolicy: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    healthAdvisory: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    },
+    safetyMeasures: {
+      type: String,
+      default: 'Not specified',
+      trim: true
+    }
   },
   
   maxParticipants: {
@@ -188,7 +291,30 @@ tourSchema.pre('save', function(next) {
     this.averageRating = 0;
     this.totalRatings = 0;
   }
+  
+  // Ensure all nested objects exist
+  if (!this.overview) this.overview = {};
+  if (!this.requirements) this.requirements = {};
+  if (!this.pricing) this.pricing = {};
+  if (!this.importantInfo) this.importantInfo = {};
+  
+  // Ensure arrays exist
+  if (!this.images) this.images = [];
+  if (!this.itinerary) this.itinerary = [];
+  if (!this.included) this.included = [];
+  if (!this.excluded) this.excluded = [];
+  if (!this.ratings) this.ratings = [];
+  
   next();
+});
+
+// Middleware to ensure data consistency
+tourSchema.pre('find', function() {
+  this.where({ isActive: true });
+});
+
+tourSchema.pre('findOne', function() {
+  this.where({ isActive: true });
 });
 
 module.exports = mongoose.model('Tour', tourSchema);

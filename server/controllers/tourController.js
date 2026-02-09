@@ -1,19 +1,71 @@
 const Tour = require('../models/Tour');
 
-// Get all tours - ENHANCED to return all data
+// Get all tours - ENHANCED to return complete data structure
 exports.getAllTours = async (req, res) => {
   try {
+    console.log('🔄 Fetching all tours with complete data...');
+    
     const tours = await Tour.find({ isActive: true })
-      .select('-ratings.userId') // Exclude user details from ratings for performance
       .sort({ createdAt: -1 });
+    
+    console.log(`✅ Found ${tours.length} active tours`);
+    
+    // Ensure all tours have complete data structure
+    const enhancedTours = tours.map(tour => {
+      const tourObj = tour.toObject();
+      
+      return {
+        ...tourObj,
+        // Ensure all admin-added fields are present
+        overview: tourObj.overview || {
+          highlights: [],
+          groupSize: 'Not specified',
+          difficulty: 'easy',
+          ageRange: 'Not specified',
+          bestSeason: 'Not specified',
+          languages: []
+        },
+        requirements: tourObj.requirements || {
+          physicalLevel: 'Not specified',
+          fitnessLevel: 'Not specified',
+          documents: [],
+          packingList: []
+        },
+        pricing: tourObj.pricing || {
+          basePrice: tourObj.price || 0,
+          discounts: [],
+          paymentPolicy: 'Not specified',
+          cancellationPolicy: 'Not specified'
+        },
+        importantInfo: tourObj.importantInfo || {
+          bookingCutoff: 'Not specified',
+          refundPolicy: 'Not specified',
+          healthAdvisory: 'Not specified',
+          safetyMeasures: 'Not specified'
+        },
+        // Ensure arrays exist
+        itinerary: tourObj.itinerary || [],
+        included: tourObj.included || [],
+        excluded: tourObj.excluded || [],
+        images: tourObj.images || [tourObj.image],
+        // Ensure rating properties
+        averageRating: tourObj.averageRating || 0,
+        totalRatings: tourObj.totalRatings || 0,
+        // Ensure basic properties
+        detailedDescription: tourObj.detailedDescription || tourObj.description || '',
+        destination: tourObj.destination || tourObj.region || 'Not specified',
+        maxParticipants: tourObj.maxParticipants || 20,
+        currentParticipants: tourObj.currentParticipants || 0
+      };
+    });
     
     res.json({
       success: true,
-      count: tours.length,
-      data: tours
+      count: enhancedTours.length,
+      data: enhancedTours
     });
   } catch (error) {
-    console.error('Error fetching tours:', error);
+    console.error('❌ Error fetching tours:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -25,9 +77,9 @@ exports.getAllTours = async (req, res) => {
 // Get single tour with all details - ENHANCED
 exports.getTourById = async (req, res) => {
   try {
-    const tour = await Tour.findById(req.params.id)
-      .populate('ratings.userId', 'name email')
-      .select('-ratings.userId.password'); // Exclude password
+    console.log('🔄 Fetching tour details for:', req.params.id);
+    
+    const tour = await Tour.findById(req.params.id);
     
     if (!tour) {
       return res.status(404).json({
@@ -36,12 +88,61 @@ exports.getTourById = async (req, res) => {
       });
     }
     
+    const tourObj = tour.toObject();
+    
+    // Ensure complete data structure
+    const enhancedTour = {
+      ...tourObj,
+      // Ensure all admin-added fields are present
+      overview: tourObj.overview || {
+        highlights: [],
+        groupSize: 'Not specified',
+        difficulty: 'easy',
+        ageRange: 'Not specified',
+        bestSeason: 'Not specified',
+        languages: []
+      },
+      requirements: tourObj.requirements || {
+        physicalLevel: 'Not specified',
+        fitnessLevel: 'Not specified',
+        documents: [],
+        packingList: []
+      },
+      pricing: tourObj.pricing || {
+        basePrice: tourObj.price || 0,
+        discounts: [],
+        paymentPolicy: 'Not specified',
+        cancellationPolicy: 'Not specified'
+      },
+      importantInfo: tourObj.importantInfo || {
+        bookingCutoff: 'Not specified',
+        refundPolicy: 'Not specified',
+        healthAdvisory: 'Not specified',
+        safetyMeasures: 'Not specified'
+      },
+      // Ensure arrays exist
+      itinerary: tourObj.itinerary || [],
+      included: tourObj.included || [],
+      excluded: tourObj.excluded || [],
+      images: tourObj.images || [tourObj.image],
+      // Ensure rating properties
+      averageRating: tourObj.averageRating || 0,
+      totalRatings: tourObj.totalRatings || 0,
+      // Ensure basic properties
+      detailedDescription: tourObj.detailedDescription || tourObj.description || '',
+      destination: tourObj.destination || tourObj.region || 'Not specified',
+      maxParticipants: tourObj.maxParticipants || 20,
+      currentParticipants: tourObj.currentParticipants || 0
+    };
+    
+    console.log('✅ Tour details loaded successfully');
+    
     res.json({
       success: true,
-      data: tour
+      data: enhancedTour
     });
   } catch (error) {
-    console.error('Error fetching tour:', error);
+    console.error('❌ Error fetching tour:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -102,7 +203,8 @@ exports.createTour = async (req, res) => {
       detailedDescription: detailedDescription || description,
       price: parseInt(price) || 0,
       duration,
-      images: images && images.length > 0 ? images : [image || 'https://via.placeholder.com/300x200?text=No+Image'],
+      image: image || 'https://via.placeholder.com/600x400?text=Tour+Image',
+      images: images && images.length > 0 ? images : [image || 'https://via.placeholder.com/600x400?text=Tour+Image'],
       region: region || 'north',
       category: category || 'heritage',
       destination: destination || `${region || 'north'} India`,
@@ -257,6 +359,7 @@ exports.updateTour = async (req, res) => {
     if (updateData.price !== undefined) tour.price = parseInt(updateData.price) || 0;
     if (updateData.duration !== undefined) tour.duration = updateData.duration;
     if (updateData.image !== undefined) {
+      tour.image = updateData.image;
       if (!tour.images || tour.images.length === 0) {
         tour.images = [updateData.image];
       } else {
@@ -376,15 +479,35 @@ exports.getToursByCategory = async (req, res) => {
   try {
     const { category } = req.params;
     
+    console.log(`🔄 Fetching tours for category: ${category}`);
+    
     const tours = await Tour.find({ 
       category: category,
       isActive: true 
     }).sort({ createdAt: -1 });
     
+    // Ensure complete data structure
+    const enhancedTours = tours.map(tour => {
+      const tourObj = tour.toObject();
+      return {
+        ...tourObj,
+        overview: tourObj.overview || {},
+        requirements: tourObj.requirements || {},
+        pricing: tourObj.pricing || {},
+        importantInfo: tourObj.importantInfo || {},
+        itinerary: tourObj.itinerary || [],
+        included: tourObj.included || [],
+        excluded: tourObj.excluded || [],
+        images: tourObj.images || [tourObj.image]
+      };
+    });
+    
+    console.log(`✅ Found ${enhancedTours.length} tours for category ${category}`);
+    
     res.json({
       success: true,
-      count: tours.length,
-      data: tours
+      count: enhancedTours.length,
+      data: enhancedTours
     });
   } catch (error) {
     console.error('Error fetching tours by category:', error);
@@ -481,6 +604,8 @@ exports.getTourRatings = async (req, res) => {
   try {
     const { tourId } = req.params;
 
+    console.log(`🔄 Fetching ratings for tour: ${tourId}`);
+
     const tour = await Tour.findById(tourId)
       .populate('ratings.userId', 'name email')
       .select('ratings averageRating totalRatings');
@@ -491,6 +616,8 @@ exports.getTourRatings = async (req, res) => {
         message: 'Tour not found'
       });
     }
+
+    console.log(`✅ Found ${tour.ratings.length} ratings for tour ${tourId}`);
 
     res.status(200).json({
       success: true,
@@ -515,6 +642,8 @@ exports.getUserRating = async (req, res) => {
   try {
     const { tourId, userId } = req.params;
 
+    console.log(`🔄 Fetching user rating: tour=${tourId}, user=${userId}`);
+
     const tour = await Tour.findById(tourId);
     if (!tour) {
       return res.status(404).json({
@@ -524,6 +653,8 @@ exports.getUserRating = async (req, res) => {
     }
 
     const userRating = tour.ratings.find(r => r.userId.toString() === userId);
+
+    console.log(`✅ User rating found: ${userRating ? 'Yes' : 'No'}`);
 
     res.status(200).json({
       success: true,
@@ -539,10 +670,12 @@ exports.getUserRating = async (req, res) => {
   }
 };
 
-// Search tours
+// Search tours - ENHANCED to search in all admin-added fields
 exports.searchTours = async (req, res) => {
   try {
     const { query, region, category, minPrice, maxPrice } = req.query;
+    
+    console.log('🔍 Searching tours with params:', { query, region, category, minPrice, maxPrice });
     
     let searchCriteria = { isActive: true };
     
@@ -550,7 +683,11 @@ exports.searchTours = async (req, res) => {
       searchCriteria.$or = [
         { title: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } },
-        { 'overview.highlights': { $regex: query, $options: 'i' } }
+        { detailedDescription: { $regex: query, $options: 'i' } },
+        { 'overview.highlights': { $regex: query, $options: 'i' } },
+        { 'itinerary.title': { $regex: query, $options: 'i' } },
+        { 'itinerary.description': { $regex: query, $options: 'i' } },
+        { 'itinerary.activities': { $regex: query, $options: 'i' } }
       ];
     }
     
@@ -565,10 +702,28 @@ exports.searchTours = async (req, res) => {
     const tours = await Tour.find(searchCriteria)
       .sort({ createdAt: -1 });
     
+    // Ensure complete data structure
+    const enhancedTours = tours.map(tour => {
+      const tourObj = tour.toObject();
+      return {
+        ...tourObj,
+        overview: tourObj.overview || {},
+        requirements: tourObj.requirements || {},
+        pricing: tourObj.pricing || {},
+        importantInfo: tourObj.importantInfo || {},
+        itinerary: tourObj.itinerary || [],
+        included: tourObj.included || [],
+        excluded: tourObj.excluded || [],
+        images: tourObj.images || [tourObj.image]
+      };
+    });
+    
+    console.log(`✅ Found ${enhancedTours.length} tours matching search criteria`);
+    
     res.json({
       success: true,
-      count: tours.length,
-      data: tours
+      count: enhancedTours.length,
+      data: enhancedTours
     });
   } catch (error) {
     console.error('Error searching tours:', error);

@@ -118,10 +118,14 @@ const deleteBooking = async (bookingId) => {
 // Save tour to database
 const saveTour = async (tourData) => {
   try {
+    console.log('📤 Sending tour data to backend:', JSON.stringify(tourData, null, 2));
+    
     const response = await axios.post(`${API_URL}/tours`, tourData);
+    console.log('✅ Tour saved successfully:', response.data);
+    
     return response.data;
   } catch (error) {
-    console.error('Error saving tour:', error);
+    console.error('❌ Error saving tour:', error.response?.data || error.message);
     return null;
   }
 };
@@ -129,10 +133,15 @@ const saveTour = async (tourData) => {
 // Update tour in database
 const updateTour = async (tourId, tourData) => {
   try {
+    console.log('🔄 Updating tour:', tourId);
+    console.log('📝 Update data:', JSON.stringify(tourData, null, 2));
+    
     const response = await axios.put(`${API_URL}/tours/${tourId}`, tourData);
+    console.log('✅ Tour updated successfully:', response.data);
+    
     return response.data;
   } catch (error) {
-    console.error('Error updating tour:', error);
+    console.error('❌ Error updating tour:', error.response?.data || error.message);
     return null;
   }
 };
