@@ -3,28 +3,63 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './auth.css';
 
-// Toast component
-const Toast = ({ message, type, onClose }) => {
+// Advanced Toast component
+const Toast = ({ message, type, submessage, onClose }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose();
-    }, 3000);
+      handleClose();
+    }, 3500);
 
     return () => clearTimeout(timer);
-  }, [onClose]);
+  }, []);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  };
+
+  const getIcon = () => {
+    switch(type) {
+      case 'success': return '✓';
+      case 'error': return '✕';
+      case 'info': return 'i';
+      default: return '!';
+    }
+  };
+
+  const getTitle = () => {
+    switch(type) {
+      case 'success': return 'Success!';
+      case 'error': return 'Oops!';
+      case 'info': return 'Info';
+      default: return 'Notification';
+    }
+  };
 
   return (
-    <div className={`auth-toast ${type}`}>
-      <div className="auth-toast-icon">
-        {type === 'success' ? '✓' : '✕'}
+    <div className={`auth-toast ${type} ${isClosing ? 'hiding' : ''}`}>
+      <div className="auth-toast-icon-container">
+        <span className="auth-toast-icon">{getIcon()}</span>
       </div>
+      
       <div className="auth-toast-content">
         <div className="auth-toast-title">
-          {type === 'success' ? 'Success!' : 'Error!'}
+          {getTitle()}
         </div>
         <div className="auth-toast-message">{message}</div>
+        {submessage && (
+          <div className="auth-toast-submessage">{submessage}</div>
+        )}
+        <div className="auth-toast-progress">
+          <div className="auth-toast-progress-bar"></div>
+        </div>
       </div>
-      <button className="auth-toast-close" onClick={onClose}>×</button>
+      
+      <button className="auth-toast-close" onClick={handleClose}>×</button>
     </div>
   );
 };
@@ -53,9 +88,9 @@ const Login = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const addToast = (message, type) => {
+  const addToast = (message, type, submessage = '') => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, message, type, submessage }]);
   };
 
   const removeToast = (id) => {
@@ -98,14 +133,37 @@ const Login = () => {
     // Validation
     const errors = [];
     
-    if (!email.trim()) errors.push('Email is required');
-    if (!validateEmail(email)) errors.push('Please enter a valid email address');
-    if (!password) errors.push('Password is required');
-    if (password.length < 6) errors.push('Password must be at least 6 characters');
-    if (password.length > 10) errors.push('Password cannot exceed 10 characters');
+    if (!email.trim()) {
+      errors.push({ 
+        message: 'Email is required', 
+        submessage: 'Please enter your email address to continue' 
+      });
+    } else if (!validateEmail(email)) {
+      errors.push({ 
+        message: 'Invalid email format', 
+        submessage: 'Please enter a valid email address (e.g., user@example.com)' 
+      });
+    }
+    
+    if (!password) {
+      errors.push({ 
+        message: 'Password is required', 
+        submessage: 'Please enter your password to continue' 
+      });
+    } else if (password.length < 6) {
+      errors.push({ 
+        message: 'Password too short', 
+        submessage: 'Password must be at least 6 characters long' 
+      });
+    } else if (password.length > 10) {
+      errors.push({ 
+        message: 'Password too long', 
+        submessage: 'Password cannot exceed 10 characters' 
+      });
+    }
     
     if (errors.length > 0) {
-      errors.forEach(error => addToast(error, 'error'));
+      errors.forEach(error => addToast(error.message, 'error', error.submessage));
       setLoading(false);
       return;
     }
@@ -129,11 +187,15 @@ const Login = () => {
         localStorage.setItem('allUsers', JSON.stringify(allUsers));
       }
 
-      addToast('Welcome Administrator! Redirecting to Admin Panel...', 'success');
+      addToast(
+        'Welcome Administrator!', 
+        'success', 
+        'You are being redirected to the Admin Panel...'
+      );
       
       setTimeout(() => {
         navigate('/admin');
-      }, 1500);
+      }, 2000);
       setLoading(false);
       return;
     }
@@ -142,6 +204,12 @@ const Login = () => {
     try {
       const API_BASE_URL = getApiBaseUrl();
       
+      addToast(
+        'Attempting to login...', 
+        'info', 
+        'Please wait while we authenticate your credentials'
+      );
+
       const res = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
@@ -163,23 +231,66 @@ const Login = () => {
           localStorage.setItem('allUsers', JSON.stringify(allUsers));
         }
         
-        addToast('Login successful! Redirecting to Dashboard...', 'success');
+        addToast(
+          'Login Successful! 🎉', 
+          'success', 
+          `Welcome back, ${res.data.user.name}! Redirecting to Dashboard...`
+        );
         
         setTimeout(() => {
           navigate('/dashboard');
-        }, 1500);
+        }, 2000);
       } else {
-        addToast(res.data.message || 'Login failed', 'error');
+        addToast(
+          'Login Failed', 
+          'error', 
+          res.data.message || 'Please check your credentials and try again'
+        );
       }
     } catch (err) {
       if (err.code === 'ECONNABORTED') {
-        addToast('Request timeout. Please try again.', 'error');
+        addToast(
+          'Request Timeout', 
+          'error', 
+          'Server is taking too long to respond. Please try again.'
+        );
       } else if (err.response) {
-        addToast(err.response.data?.message || `Error: ${err.response.status}`, 'error');
+        const status = err.response.status;
+        if (status === 401) {
+          addToast(
+            'Authentication Failed', 
+            'error', 
+            'Invalid email or password. Please try again.'
+          );
+        } else if (status === 404) {
+          addToast(
+            'Service Unavailable', 
+            'error', 
+            'Login service is currently unavailable. Please try again later.'
+          );
+        } else if (status >= 500) {
+          addToast(
+            'Server Error', 
+            'error', 
+            'Our servers are experiencing issues. Please try again later.'
+          );
+        } else {
+          addToast(
+            'Login Error', 
+            'error', 
+            err.response.data?.message || `Error: ${status}`
+          );
+        }
       } else if (err.request) {
         const fallbackUrl = 'https://tours-travels-server-6mm7.onrender.com/api/auth/login';
         if (getApiBaseUrl() !== fallbackUrl) {
           try {
+            addToast(
+              'Trying Backup Server...', 
+              'info', 
+              'Attempting to connect through backup server'
+            );
+
             const fallbackRes = await axios.post(
               fallbackUrl,
               { email, password },
@@ -195,10 +306,14 @@ const Login = () => {
             if (fallbackRes.data.success) {
               localStorage.setItem('token', fallbackRes.data.token);
               localStorage.setItem('user', JSON.stringify(fallbackRes.data.user));
-              addToast('Login successful! Redirecting to Dashboard...', 'success');
+              addToast(
+                'Login Successful via Backup!', 
+                'success', 
+                'Welcome back! Redirecting to Dashboard...'
+              );
               setTimeout(() => {
                 navigate('/dashboard');
-              }, 1500);
+              }, 2000);
             }
           } catch (fallbackErr) {
             handleFallbackError(fallbackErr);
@@ -207,7 +322,11 @@ const Login = () => {
           handleFallbackError(err);
         }
       } else {
-        addToast('Login failed. Please check your credentials and try again.', 'error');
+        addToast(
+          'Connection Failed', 
+          'error', 
+          'Unable to connect to the server. Please check your internet connection.'
+        );
       }
       console.error('Login error:', err);
     } finally {
@@ -217,23 +336,36 @@ const Login = () => {
 
   const handleFallbackError = (err) => {
     if (err.response?.status === 401) {
-      addToast('Invalid email or password', 'error');
+      addToast(
+        'Invalid Credentials', 
+        'error', 
+        'The email or password you entered is incorrect.'
+      );
     } else if (err.response?.status === 400) {
-      addToast('Please check your input data', 'error');
+      addToast(
+        'Invalid Request', 
+        'error', 
+        'Please check your input data and try again.'
+      );
     } else {
-      addToast('Login failed. Please try again.', 'error');
+      addToast(
+        'Server Unavailable', 
+        'error', 
+        'All servers are currently unavailable. Please try again later.'
+      );
     }
   };
 
   return (
     <div className="auth-page">
-      {/* UPDATED: Toast Container at Top Center */}
+      {/* Advanced Toast Container at Top Center */}
       <div className="auth-toast-container">
         {toasts.map(toast => (
           <Toast
             key={toast.id}
             message={toast.message}
             type={toast.type}
+            submessage={toast.submessage}
             onClose={() => removeToast(toast.id)}
           />
         ))}
@@ -285,10 +417,10 @@ const Login = () => {
                   <button type="submit" className="btn-primary" disabled={loading}>
                     {loading ? (
                       <>
-                        <span className="spinner"></span> Logging in...
+                        <span className="spinner"></span> Authenticating...
                       </>
                     ) : (
-                      'Login'
+                      'Login to Your Account'
                     )}
                   </button>
                 </form>
