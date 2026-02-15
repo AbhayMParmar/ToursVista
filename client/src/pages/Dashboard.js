@@ -201,6 +201,13 @@ const getTours = async () => {
           overviewHighlights: tours[0].overview?.highlights?.length || 0,
           hasItinerary: !!tours[0].itinerary,
           itineraryLength: tours[0].itinerary?.length || 0,
+          itineraryDays: tours[0].itinerary?.map(day => ({
+            day: day.day,
+            title: day.title,
+            activitiesCount: day.activities?.length || 0,
+            hasMeals: !!day.meals,
+            hasAccommodation: !!day.accommodation
+          })),
           hasIncluded: !!tours[0].included,
           includedLength: tours[0].included?.length || 0,
           hasExcluded: !!tours[0].excluded,
@@ -1884,7 +1891,7 @@ const ProfilePage = ({ user, userBookings, savedTours, onEditProfile }) => {
   );
 };
 
-// Tour Detail Page Component - COMPLETELY REWRITTEN to properly display all admin-added data
+// Tour Detail Page Component - COMPLETELY REWRITTEN to properly display all admin-added data including itinerary
 const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour }) => {
   const location = useLocation();
   const tourId = location.pathname.split('/').pop();
@@ -1909,6 +1916,19 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           if (response.data.success) {
             const tourData = response.data.data;
             console.log('✅ Tour details loaded successfully');
+            
+            // Log itinerary for debugging
+            console.log('📋 Itinerary data from API:', {
+              hasItinerary: !!tourData.itinerary,
+              itineraryLength: tourData.itinerary?.length || 0,
+              itineraryDays: tourData.itinerary?.map(day => ({
+                day: day.day,
+                title: day.title,
+                activitiesCount: day.activities?.length || 0,
+                hasMeals: !!day.meals,
+                hasAccommodation: !!day.accommodation
+              }))
+            });
             
             // Ensure all admin-added data is properly structured
             const formattedTour = {
@@ -1940,7 +1960,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                 healthAdvisory: 'Not specified',
                 safetyMeasures: 'Not specified'
               },
-              // Ensure arrays exist
+              // Ensure arrays exist - CRITICAL for itinerary display
               itinerary: tourData.itinerary || [],
               included: tourData.included || [],
               excluded: tourData.excluded || [],
@@ -1958,6 +1978,13 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               maxParticipants: tourData.maxParticipants || 20,
               currentParticipants: tourData.currentParticipants || 0
             };
+            
+            console.log('📦 Formatted tour with itinerary:', {
+              hasItinerary: !!formattedTour.itinerary,
+              itineraryLength: formattedTour.itinerary.length,
+              firstDay: formattedTour.itinerary[0] || null
+            });
+            
             setTourDetails(formattedTour);
             
             // Fetch ratings
@@ -2035,7 +2062,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
     );
   }
 
-  // Function to render itinerary
+  // Function to render itinerary - CRITICAL for displaying day-wise details from admin
   const renderItinerary = () => {
     if (!tourDetails.itinerary || tourDetails.itinerary.length === 0) {
       return (
@@ -2047,7 +2074,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           color: '#666'
         }}>
           <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📅</div>
-          <p>No itinerary details available for this tour.</p>
+          <p>No itinerary details available for this tour. Check back later!</p>
         </div>
       );
     }
@@ -2060,7 +2087,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
         </div>
         
         {day.description && (
-          <p style={{ color: '#666', marginBottom: '1rem' }}>{day.description}</p>
+          <p style={{ color: '#666', marginBottom: '1rem', lineHeight: '1.6' }}>{day.description}</p>
         )}
         
         {day.activities && day.activities.length > 0 && (
@@ -2085,18 +2112,18 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
             marginTop: '1rem',
             paddingTop: '1rem',
             borderTop: '1px solid #FFE5CC',
-            fontSize: '0.9rem',
+            fontSize: '0.95rem',
             color: '#666'
           }}>
             {day.meals && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1rem' }}>🍽️</span>
+                <span style={{ fontSize: '1.1rem' }}>🍽️</span>
                 <span><strong>Meals:</strong> {day.meals}</span>
               </div>
             )}
             {day.accommodation && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1rem' }}>🏨</span>
+                <span style={{ fontSize: '1.1rem' }}>🏨</span>
                 <span><strong>Accommodation:</strong> {day.accommodation}</span>
               </div>
             )}
@@ -2495,32 +2522,38 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           {/* Tour Overview Details */}
           {renderOverviewDetails()}
 
-          {/* Services (Included/Excluded) */}
-          {renderServices()}
-
-          {/* Itinerary */}
+          {/* Itinerary - CRITICAL section for displaying day-wise details from admin */}
           <div className="tour-detail-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 className="section-title">
                 <span style={{ marginRight: '0.5rem' }}>📅</span>
-                Itinerary
+                Detailed Itinerary
               </h3>
               {tourDetails.itinerary && tourDetails.itinerary.length > 0 && (
                 <span style={{ 
-                  fontSize: '0.9rem', 
-                  color: '#666',
-                  background: '#FFFAF5',
+                  fontSize: '0.95rem', 
+                  color: '#2E8B57',
+                  background: '#f0f9f4',
                   padding: '0.25rem 0.75rem',
-                  borderRadius: '12px'
+                  borderRadius: '20px',
+                  fontWeight: '600'
                 }}>
-                  {tourDetails.itinerary.length} days
+                  {tourDetails.itinerary.length} Days
                 </span>
               )}
             </div>
+            
+            <p style={{ color: '#666', marginBottom: '1.5rem', fontStyle: 'italic' }}>
+              Here's a day-by-day breakdown of your {tourDetails.title} experience:
+            </p>
+            
             <div className="tour-itinerary">
               {renderItinerary()}
             </div>
           </div>
+
+          {/* Services (Included/Excluded) */}
+          {renderServices()}
 
           {/* Requirements & Important Info */}
           {(tourDetails.requirements || tourDetails.pricing || tourDetails.importantInfo) && (
@@ -2648,6 +2681,11 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                 <span style={{ color: '#666' }}>Duration:</span>
                 <span style={{ fontWeight: '600', color: '#333' }}>{tourDetails.duration}</span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#666' }}>Itinerary Days:</span>
+                <span style={{ fontWeight: '600', color: '#333' }}>{tourDetails.itinerary?.length || 0} days</span>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -2943,6 +2981,14 @@ const Dashboard = () => {
     try {
       const allTours = await getTours();
       console.log('📊 Loaded tours with complete data:', allTours.length);
+      
+      // Log tours with itinerary for debugging
+      allTours.forEach((tour, index) => {
+        console.log(`Tour ${index + 1} "${tour.title}" has itinerary:`, {
+          hasItinerary: !!tour.itinerary,
+          itineraryLength: tour.itinerary?.length || 0
+        });
+      });
       
       // Cache tours for offline use
       localStorage.setItem('cachedTours', JSON.stringify(allTours));
