@@ -930,35 +930,71 @@
   box-shadow: 0 6px 12px rgba(46, 139, 87, 0.3);
 }
 
-.btn-save {
-  background: #FFFAF5;
-  color: #333333;
+/* Unique Rate Button Design */
+.btn-rate-unique {
+  background: linear-gradient(135deg, #FF9966, #FFB088);
+  color: white;
   padding: 0.8rem 1.8rem;
-  border: 2px solid #FFE5CC;
-  border-radius: 8px;
+  border: none;
+  border-radius: 25px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
   flex: 1;
-  min-width: 140px;
+  min-width: 100px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(255, 153, 102, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-rate-unique::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-rate-unique:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(255, 153, 102, 0.4);
+  background: linear-gradient(135deg, #FF8866, #FFA078);
+}
+
+.btn-rate-unique:hover::before {
+  left: 100%;
+}
+
+.btn-rate-unique:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(255, 153, 102, 0.3);
+}
+
+.btn-rate-unique .rate-star {
+  font-size: 1.2rem;
+  animation: starPulse 2s infinite;
+}
+
+.btn-rate-unique .rate-text {
   letter-spacing: 0.5px;
-  white-space: nowrap;
 }
 
-.btn-save:hover {
-  background: #FFE5CC;
-  border-color: #FF9966;
-}
-
-.btn-save.saved {
-  background: rgba(46, 139, 87, 0.1);
-  color: #2E8B57;
-  border-color: rgba(46, 139, 87, 0.3);
+@keyframes starPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* SAVED TOURS SECTION */
@@ -1200,6 +1236,68 @@
   font-weight: bold;
   font-size: 1.1rem;
   box-shadow: 0 4px 6px rgba(46, 139, 87, 0.2);
+  z-index: 2;
+}
+
+/* Heart Icon for Saving Tours - No Background */
+.tour-save-heart {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: transparent;
+  border: none;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.tour-save-heart:hover {
+  transform: scale(1.1);
+}
+
+.tour-save-heart.saved svg {
+  fill: #FF4444;
+  stroke: #FF4444;
+}
+
+.tour-save-heart svg {
+  width: 28px;
+  height: 28px;
+  transition: all 0.2s ease;
+  stroke: #ffffff;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.tour-save-heart:hover svg {
+  filter: drop-shadow(0 3px 6px rgba(255, 68, 68, 0.4));
+}
+
+/* Rating badge on image */
+.tour-rating-badge {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  z-index: 2;
+}
+
+/* Tour category badge */
+.tour-category-badge {
+  position: absolute;
+  top: 1rem;
+  right: 5rem;
   z-index: 2;
 }
 
@@ -2202,12 +2300,13 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(255, 204, 153, 0.1);
 }
 
 .itinerary-day:hover {
   border-color: #FF9966;
   transform: translateX(5px);
-  box-shadow: 0 8px 24px rgba(255, 204, 153, 0.15);
+  box-shadow: 0 8px 24px rgba(255, 153, 102, 0.15);
 }
 
 .itinerary-day::before {
@@ -2223,18 +2322,11 @@
 
 .itinerary-day-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1.2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #FFE5CC;
-}
-
-.itinerary-day-header h4 {
-  margin: 0;
-  color: #333333;
-  font-size: 1.3rem;
-  font-weight: 600;
+  border-bottom: 2px solid #FFE5CC;
 }
 
 .itinerary-day-number {
@@ -2248,26 +2340,49 @@
   justify-content: center;
   font-weight: bold;
   font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(255, 153, 102, 0.3);
+}
+
+.itinerary-day-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.itinerary-day p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.itinerary-day strong {
+  color: #333;
+  font-size: 0.95rem;
 }
 
 .itinerary-activities {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0.5rem 0 1rem 0;
 }
 
 .itinerary-activities li {
-  padding: 0.6rem 0;
-  color: #666666;
+  padding: 0.5rem 0;
+  color: #666;
   display: flex;
   align-items: center;
   gap: 0.8rem;
   transition: all 0.3s ease;
+  font-size: 0.95rem;
 }
 
 .itinerary-activities li:hover {
-  color: #333333;
+  color: #333;
   transform: translateX(5px);
+  background: rgba(255, 153, 102, 0.05);
+  padding-left: 0.5rem;
+  border-radius: 5px;
 }
 
 .itinerary-activities li::before {
@@ -2275,6 +2390,54 @@
   color: #2E8B57;
   font-weight: bold;
   font-size: 1.1rem;
+}
+
+/* Itinerary meals and accommodation badges */
+.itinerary-day .meal-badge,
+.itinerary-day .accommodation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: #FFFAF5;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #333;
+  border: 1px solid #FFE5CC;
+}
+
+.itinerary-day .meal-badge {
+  background: rgba(46, 139, 87, 0.1);
+  color: #2E8B57;
+  border-color: rgba(46, 139, 87, 0.3);
+}
+
+.itinerary-day .accommodation-badge {
+  background: rgba(255, 153, 102, 0.1);
+  color: #FF9966;
+  border-color: rgba(255, 153, 102, 0.3);
+}
+
+/* Tour Detail Page - Itinerary Stats */
+.itinerary-stats {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.itinerary-stat {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #666;
+  border: 1px solid #eee;
+}
+
+.itinerary-stat strong {
+  color: #2E8B57;
+  margin-right: 0.25rem;
 }
 
 .tour-inclusion-card {
@@ -2502,9 +2665,68 @@
 }
 
 .tour-card .btn-book-now,
-.tour-card .btn-save,
+.tour-card .btn-rate-unique,
+.tour-card .tour-save-heart,
 .tour-card .tour-price {
   pointer-events: auto;
+}
+
+/* Mobile Responsive for Rate Button and Heart Icon */
+@media (max-width: 768px) {
+  .btn-rate-unique {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+    border-radius: 20px;
+  }
+  
+  .btn-rate-unique .rate-star {
+    font-size: 1.1rem;
+  }
+  
+  .tour-save-heart {
+    top: 0.8rem;
+    left: 0.8rem;
+  }
+  
+  .tour-save-heart svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .tour-category-badge {
+    right: 4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-rate-unique {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    border-radius: 18px;
+  }
+  
+  .btn-rate-unique .rate-star {
+    font-size: 1rem;
+  }
+  
+  .tour-save-heart {
+    top: 0.6rem;
+    left: 0.6rem;
+  }
+  
+  .tour-save-heart svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .tour-category-badge {
+    right: 3.5rem;
+  }
+  
+  .tour-category-badge span {
+    font-size: 0.65rem !important;
+    padding: 2px 6px !important;
+  }
 }
 
 /* RESPONSIVE MEDIA QUERIES */
@@ -2741,7 +2963,7 @@
   }
   
   .btn-book-now,
-  .btn-save {
+  .btn-rate-unique {
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
     min-width: 120px;
@@ -3067,7 +3289,7 @@
   }
   
   .btn-book-now,
-  .btn-save {
+  .btn-rate-unique {
     width: 100%;
     padding: 0.8rem;
     font-size: 0.9rem;
@@ -3132,14 +3354,23 @@
     padding: 1rem;
   }
   
+  .itinerary-day-header {
+    flex-wrap: wrap;
+  }
+  
   .itinerary-day-header h4 {
     font-size: 1rem;
   }
   
   .itinerary-day-number {
-    width: 30px;
-    height: 30px;
-    font-size: 1rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .itinerary-activities li {
+    font-size: 0.85rem;
+    padding: 0.4rem 0;
   }
   
   .tour-detail-actions {
@@ -3295,356 +3526,4 @@
     display: block;
     background: rgba(255, 153, 102, 0.1);
   }
-}
-
-
-/* Add these styles at the end of your dashboard.css file */
-
-/* Tour Detail Page - Enhanced Itinerary Styling */
-.tour-itinerary {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.itinerary-day {
-  background: #FFFFFF;
-  padding: 1.8rem;
-  border-radius: 15px;
-  border: 1px solid #FFE5CC;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(255, 204, 153, 0.1);
-}
-
-.itinerary-day:hover {
-  border-color: #FF9966;
-  transform: translateX(5px);
-  box-shadow: 0 8px 24px rgba(255, 153, 102, 0.15);
-}
-
-.itinerary-day::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 5px;
-  height: 100%;
-  background: linear-gradient(135deg, #FF9966, #FFCC99);
-  border-radius: 5px 0 0 5px;
-}
-
-.itinerary-day-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #FFE5CC;
-}
-
-.itinerary-day-number {
-  background: linear-gradient(135deg, #FF9966, #FFCC99);
-  color: white;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(255, 153, 102, 0.3);
-}
-
-.itinerary-day-header h4 {
-  margin: 0;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.itinerary-day p {
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.itinerary-day strong {
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.itinerary-activities {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 1rem 0;
-}
-
-.itinerary-activities li {
-  padding: 0.5rem 0;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
-}
-
-.itinerary-activities li:hover {
-  color: #333;
-  transform: translateX(5px);
-  background: rgba(255, 153, 102, 0.05);
-  padding-left: 0.5rem;
-  border-radius: 5px;
-}
-
-.itinerary-activities li::before {
-  content: '✓';
-  color: #2E8B57;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-/* Itinerary meals and accommodation badges */
-.itinerary-day .meal-badge,
-.itinerary-day .accommodation-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 1rem;
-  background: #FFFAF5;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  color: #333;
-  border: 1px solid #FFE5CC;
-}
-
-.itinerary-day .meal-badge {
-  background: rgba(46, 139, 87, 0.1);
-  color: #2E8B57;
-  border-color: rgba(46, 139, 87, 0.3);
-}
-
-.itinerary-day .accommodation-badge {
-  background: rgba(255, 153, 102, 0.1);
-  color: #FF9966;
-  border-color: rgba(255, 153, 102, 0.3);
-}
-
-/* Tour Detail Page - Itinerary Stats */
-.itinerary-stats {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
-  flex-wrap: wrap;
-}
-
-.itinerary-stat {
-  padding: 0.5rem 1rem;
-  background: #f8f9fa;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  color: #666;
-  border: 1px solid #eee;
-}
-
-.itinerary-stat strong {
-  color: #2E8B57;
-  margin-right: 0.25rem;
-}
-
-/* Mobile Responsive for Itinerary */
-@media (max-width: 768px) {
-  .itinerary-day {
-    padding: 1.2rem;
-  }
-  
-  .itinerary-day-header h4 {
-    font-size: 1.1rem;
-  }
-  
-  .itinerary-day-number {
-    width: 30px;
-    height: 30px;
-    font-size: 1rem;
-  }
-  
-  .itinerary-activities li {
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .itinerary-day {
-    padding: 1rem;
-  }
-  
-  .itinerary-day-header {
-    flex-wrap: wrap;
-  }
-  
-  .itinerary-day-header h4 {
-    font-size: 1rem;
-  }
-  
-  .itinerary-day-number {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
-  }
-  
-  .itinerary-activities li {
-    font-size: 0.85rem;
-    padding: 0.4rem 0;
-  }
-}
-
-
-
-/* Heart Icon for Saving Tours */
-.tour-save-heart {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  padding: 0;
-}
-
-.tour-save-heart:hover {
-  transform: scale(1.1);
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.tour-save-heart.saved {
-  background: #FF9966;
-}
-
-.tour-save-heart.saved svg {
-  fill: #FF9966;
-  stroke: #FF9966;
-}
-
-.tour-save-heart svg {
-  width: 22px;
-  height: 22px;
-  transition: all 0.3s ease;
-}
-
-/* Adjust for mobile */
-@media (max-width: 768px) {
-  .tour-save-heart {
-    width: 35px;
-    height: 35px;
-  }
-  
-  .tour-save-heart svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .tour-save-heart {
-    width: 32px;
-    height: 32px;
-    top: 0.8rem;
-    left: 0.8rem;
-  }
-  
-  .tour-save-heart svg {
-    width: 16px;
-    height: 16px;
-  }
-}
-
-
-
-
-/* Heart Icon for Saving Tours */
-.tour-save-heart {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  padding: 0;
-}
-
-.tour-save-heart:hover {
-  transform: scale(1.1);
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-
-
-.tour-save-heart.saved svg {
-  fill: #FF4444;
-  stroke: #FF4444;
-}
-
-.tour-save-heart svg {
-  width: 22px;
-  height: 22px;
-  transition: all 0.3s ease;
-}
-
-/* Adjust for mobile */
-@media (max-width: 768px) {
-  .tour-save-heart {
-    width: 35px;
-    height: 35px;
-    top: 0.8rem;
-    left: 0.8rem;
-  }
-  
-  .tour-save-heart svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .tour-save-heart {
-    width: 32px;
-    height: 32px;
-    top: 0.6rem;
-    left: 0.6rem;
-  }
-  
-  .tour-save-heart svg {
-    width: 16px;
-    height: 16px;
-  }
-}
-
-/* Ensure proper z-index and click handling */
-.tour-save-heart,
-.tour-save-heart * {
-  pointer-events: auto !important;
-  cursor: pointer;
 }
