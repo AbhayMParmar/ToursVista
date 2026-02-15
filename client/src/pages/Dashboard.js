@@ -317,25 +317,27 @@ const updateBookingStatus = async (bookingId, status) => {
   }
 };
 
-// UPDATED: Toast Notification Component - Matches auth.css style
-const ToastNotification = ({ message, type, onClose }) => {
+// Toast Notification Component
+const ToastNotification = ({ message, type = 'success', onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [onClose]);
 
+  const icon = type === 'success' ? '✓' : '⚠️';
+  const title = type === 'success' ? 'Success!' : 'Error!';
+
   return (
-    <div className={`auth-toast ${type}`}>
-      <div className="auth-toast-icon">
-        {type === 'success' ? '✓' : '✕'}
+    <div className="booking-toast">
+      <div className="toast-icon">{icon}</div>
+      <div className="toast-content">
+        <h4>{title}</h4>
+        <p>{message}</p>
       </div>
-      <div className="auth-toast-content">
-        <div className="auth-toast-message">{message}</div>
-      </div>
-      <button className="auth-toast-close" onClick={onClose}>×</button>
+      <button className="toast-close" onClick={onClose}>×</button>
     </div>
   );
 };
@@ -920,8 +922,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
     } catch (error) {
       console.error('🔥 Error creating booking:', error);
       setIsSubmitting(false);
-      // Instead of alert, we'll let the parent component handle the error toast
-      throw error;
+      alert(error.message || 'Error creating booking. Please try again.');
     }
   };
 
@@ -1512,8 +1513,7 @@ const BookingsPage = ({ user, userBookings, onCancelBooking }) => {
           onCancelBooking(bookingId);
         }
       } catch (error) {
-        // Error will be handled by parent component toast
-        throw error;
+        alert(error.message || 'Error cancelling booking');
       }
     }
   };
@@ -2855,17 +2855,19 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour, onView
   );
 };
 
-// Main Dashboard Component - UPDATED with enhanced data fetching and toast notifications
+// Main Dashboard Component - UPDATED with enhanced data fetching
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] useState(true);
+  const [loading, setLoading] = useState(true);
   const [tours, setTours] = useState([]);
   const [userBookings, setUserBookings] = useState([]);
   const [savedTours, setSavedTours] = useState([]);
   const [selectedTour, setSelectedTour] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [toasts, setToasts] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('online');
   const navigate = useNavigate();
@@ -2875,12 +2877,12 @@ const Dashboard = () => {
   useEffect(() => {
     const handleOnline = () => {
       setConnectionStatus('online');
-      addToast('Back online!', 'success');
+      showNotification('Back online!', 'success');
     };
 
     const handleOffline = () => {
       setConnectionStatus('offline');
-      addToast('You are offline. Some features may be limited.', 'error');
+      showNotification('You are offline. Some features may be limited.', 'error');
     };
 
     window.addEventListener('online', handleOnline);
@@ -2895,13 +2897,10 @@ const Dashboard = () => {
     };
   }, []);
 
-  const addToast = (message, type) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+  const showNotification = (message, type = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
   };
 
   // Enhanced function to load tours with all data
@@ -2988,7 +2987,7 @@ const Dashboard = () => {
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          addToast('Using cached profile data', 'warning');
+          showNotification('Using cached profile data', 'warning');
           
           // Load cached tours
           await loadToursWithDetails();
@@ -3001,7 +3000,7 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      addToast('Error loading dashboard. Please refresh.', 'error');
+      showNotification('Error loading dashboard. Please refresh.', 'error');
     } finally {
       setLoading(false);
     }
@@ -3040,7 +3039,7 @@ const Dashboard = () => {
 
   const handleRateTour = (tour) => {
     if (!user) {
-      addToast('Please login to rate tours', 'error');
+      showNotification('Please login to rate tours', 'error');
       return;
     }
     setSelectedTour(tour);
@@ -3059,7 +3058,7 @@ const Dashboard = () => {
     
     setShowBookingModal(false);
     setSelectedTour(null);
-    addToast(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`, 'success');
+    showNotification(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`);
   };
 
   const handleSubmitRating = (ratingData) => {
@@ -3077,7 +3076,7 @@ const Dashboard = () => {
     
     setShowRatingModal(false);
     setSelectedTour(null);
-    addToast('Thank you for your rating!', 'success');
+    showNotification('Thank you for your rating!', 'success');
   };
 
   const handleCancelBooking = (bookingId) => {
@@ -3089,12 +3088,12 @@ const Dashboard = () => {
       )
     );
     
-    addToast('Booking cancelled successfully!', 'success');
+    showNotification('Booking cancelled successfully!', 'success');
   };
 
   const handleSaveTour = async (tourId) => {
     if (!user) {
-      addToast('Please login to save tours', 'error');
+      showNotification('Please login to save tours', 'error');
       return;
     }
     
@@ -3107,7 +3106,7 @@ const Dashboard = () => {
         
         // Update local state
         setSavedTours(prev => prev.filter(tour => tour._id !== tourId));
-        addToast('Tour removed from saved list!', 'success');
+        showNotification('Tour removed from saved list!', 'success');
       } else {
         // Add to saved in database
         await saveTourToDB(user._id, tourId);
@@ -3116,18 +3115,18 @@ const Dashboard = () => {
         const tourToSave = tours.find(t => t._id === tourId);
         if (tourToSave) {
           setSavedTours(prev => [...prev, tourToSave]);
-          addToast('Tour saved successfully!', 'success');
+          showNotification('Tour saved successfully!', 'success');
         }
       }
     } catch (error) {
       console.error('Error saving/removing tour:', error);
-      addToast('Error updating saved tours. Please try again.', 'error');
+      showNotification('Error updating saved tours. Please try again.', 'error');
     }
   };
 
   const handleEditProfile = (updatedUser) => {
     setUser(updatedUser);
-    addToast('Profile updated successfully!', 'success');
+    showNotification('Profile updated successfully!', 'success');
   };
 
   const handleLogout = () => {
@@ -3204,18 +3203,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* UPDATED: Toast Container at Top Center */}
-      <div className="auth-toast-container">
-        {toasts.map(toast => (
-          <ToastNotification
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
-          />
-        ))}
-      </div>
-
       {/* FIXED NAVBAR WITH HAMBURGER MENU */}
       <nav className="dashboard-navbar">
         <div className="navbar-brand">
@@ -3524,6 +3511,15 @@ const Dashboard = () => {
             setSelectedTour(null);
           }}
           onSubmit={handleSubmitRating}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <ToastNotification
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
         />
       )}
 
