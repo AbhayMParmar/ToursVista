@@ -898,36 +898,30 @@
   }
 }
 
-/* UPDATED TOUR BOOKING CARD BUTTON STYLES - Desktop Only Optimizations */
+/* TOUR BOOKING CARD STYLES */
 .tour-booking-actions {
   display: flex;
-  gap: 0.8rem;
+  gap: 1rem;
   margin-top: 1.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  width: 100%;
 }
 
 .btn-book-now {
   background: #2E8B57;
   color: white;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem 1.8rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1 1 auto;
-  min-width: 100px;
-  max-width: 120px;
+  flex: 1;
+  min-width: 140px;
   box-shadow: 0 4px 6px rgba(46, 139, 87, 0.2);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.2;
 }
 
 .btn-book-now:hover {
@@ -936,115 +930,35 @@
   box-shadow: 0 6px 12px rgba(46, 139, 87, 0.3);
 }
 
-.btn-book-now:active {
-  transform: translateY(0);
-}
-
 .btn-save {
   background: #FFFAF5;
   color: #333333;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem 1.8rem;
   border: 2px solid #FFE5CC;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1 1 auto;
-  min-width: 100px;
-  max-width: 120px;
+  flex: 1;
+  min-width: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  letter-spacing: 0.3px;
+  gap: 0.5rem;
+  letter-spacing: 0.5px;
   white-space: nowrap;
-  line-height: 1.2;
 }
 
 .btn-save:hover {
   background: #FFE5CC;
   border-color: #FF9966;
-  transform: translateY(-2px);
 }
 
 .btn-save.saved {
   background: rgba(46, 139, 87, 0.1);
   color: #2E8B57;
   border-color: rgba(46, 139, 87, 0.3);
-}
-
-.btn-save.saved:hover {
-  background: rgba(46, 139, 87, 0.15);
-  border-color: #2E8B57;
-}
-
-/* Rate button specific styling - Orange variant */
-.btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"] {
-  background: #FFFAF5;
-  color: #FF9966;
-  border-color: #FF9966;
-}
-
-.btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"]:hover {
-  background: #FFE5CC;
-  color: #333333;
-  border-color: #FF9966;
-}
-
-/* DESKTOP ONLY BUTTON OPTIMIZATIONS - 1025px and above */
-@media (min-width: 1025px) {
-  .tour-booking-actions {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.5rem;
-    justify-content: space-between;
-    width: 100%;
-  }
-  
-  .btn-book-now {
-    flex: 2 1 0;
-    min-width: 0;
-    max-width: none;
-    padding: 0.9rem 0.5rem;
-    font-size: 1rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-  
-  .btn-save {
-    flex: 2 1 0;
-    min-width: 0;
-    max-width: none;
-    padding: 0.9rem 0.5rem;
-    font-size: 1rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-  
-  /* Rate button - Square shape */
-  .btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"] {
-    flex: 1 1 0;
-    min-width: 45px;
-    max-width: 45px;
-    height: 45px;
-    padding: 0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    white-space: nowrap;
-    text-overflow: clip;
-    overflow: hidden;
-  }
-  
-  /* Ensure text is readable */
-  .btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"]:hover {
-    transform: translateY(-2px);
-  }
 }
 
 /* SAVED TOURS SECTION */
@@ -1235,7 +1149,7 @@
   margin-bottom: 3rem;
 }
 
-/* TOUR CARD - UPDATED FOR CLICK FUNCTIONALITY AND CONSISTENT FORMATTING */
+/* TOUR CARD - UPDATED FOR CLICK FUNCTIONALITY */
 .tour-card {
   background: #FFFFFF;
   border-radius: 15px;
@@ -1249,7 +1163,6 @@
   min-height: 500px;
   cursor: pointer;
   position: relative;
-  width: 100%;
 }
 
 .tour-card:hover {
@@ -1260,10 +1173,9 @@
 
 .tour-image {
   position: relative;
-  height: 200px;
+  height: 220px;
   overflow: hidden;
   flex-shrink: 0;
-  width: 100%;
 }
 
 .tour-image img {
@@ -1283,70 +1195,47 @@
   right: 1rem;
   background: #2E8B57;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 20px;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.1rem;
   box-shadow: 0 4px 6px rgba(46, 139, 87, 0.2);
   z-index: 2;
 }
 
 .tour-content {
-  padding: 1.5rem;
+  padding: 1.8rem;
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 300px;
-  width: 100%;
+  min-height: 280px;
 }
 
 .tour-content h3 {
   margin: 0 0 0.8rem 0;
   color: #333333;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  min-height: 3.2rem;
+  min-height: 3.5rem;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  width: 100%;
 }
 
 .tour-content p {
   color: #666666;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  width: 100%;
-}
-
-/* Admin-added details summary - consistent across all cards */
-.tour-content > div[style*="display: grid"] {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background: #FFFAF5;
-  border-radius: 8px;
-  border: 1px solid #FFE5CC;
-  width: 100%;
-  min-height: 70px;
-}
-
-.tour-content > div[style*="display: grid"] > div {
-  color: #555;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem;
 }
 
 .tour-meta {
@@ -1354,42 +1243,19 @@
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-  padding-top: 0.8rem;
+  padding-top: 1rem;
   border-top: 1px solid #FFE5CC;
   flex-shrink: 0;
-  width: 100%;
 }
 
 .duration {
   color: #2E8B57;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.5rem;
   white-space: nowrap;
-}
-
-/* Rating badge on tour card - unchanged */
-.tour-rating-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 2;
-}
-
-.tour-category-badge {
-  position: absolute;
-  bottom: 1rem;
-  left: 1rem;
-  z-index: 2;
 }
 
 /* Mobile click hint */
@@ -1397,12 +1263,11 @@
   display: none;
   text-align: center;
   margin-top: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: #666;
-  padding: 0.4rem;
+  padding: 0.5rem;
   background: #FFFAF5;
   border-radius: 5px;
-  width: 100%;
 }
 
 /* USER STATS */
@@ -1726,7 +1591,7 @@
   margin-right: 0.5rem;
 }
 
-/* UPDATED MY BOOKINGS PAGE STYLES - Consistent Card Formatting */
+/* MY BOOKINGS PAGE STYLES */
 .bookings-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -1741,11 +1606,6 @@
   box-shadow: 0 10px 30px rgba(255, 204, 153, 0.1);
   border: 1px solid #FFE5CC;
   transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 350px;
-  width: 100%;
 }
 
 .booking-card-item:hover {
@@ -1761,28 +1621,19 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #FFE5CC;
-  width: 100%;
 }
 
 .booking-header h3 {
   margin: 0;
   color: #333333;
-  font-size: 1.2rem;
-  font-weight: 600;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding-right: 0.5rem;
+  font-size: 1.3rem;
 }
 
 .booking-status {
-  padding: 0.3rem 0.8rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .booking-status.confirmed {
@@ -1802,8 +1653,6 @@
 
 .booking-details {
   margin-bottom: 1.5rem;
-  flex: 1;
-  width: 100%;
 }
 
 .booking-detail {
@@ -1811,28 +1660,23 @@
   justify-content: space-between;
   margin-bottom: 0.8rem;
   color: #666666;
-  font-size: 0.95rem;
-  width: 100%;
 }
 
 .booking-detail strong {
   color: #333333;
-  font-weight: 600;
 }
 
 .booking-actions {
   display: flex;
   gap: 1rem;
   align-items: center;
-  margin-top: auto;
-  width: 100%;
 }
 
 .btn-cancel-booking {
   background: rgba(255, 107, 107, 0.1);
   color: #FF6B6B;
   border: 2px solid rgba(255, 107, 107, 0.3);
-  padding: 0.7rem 1.2rem;
+  padding: 0.7rem 1.5rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1840,22 +1684,19 @@
   font-weight: 600;
   white-space: nowrap;
   text-align: center;
-  font-size: 0.9rem;
-  min-width: 100px;
 }
 
 .btn-cancel-booking:hover {
   background: rgba(255, 107, 107, 0.2);
   color: #333333;
   border-color: #FF6B6B;
-  transform: translateY(-2px);
 }
 
 .btn-view-details {
   background: rgba(255, 204, 153, 0.1);
   color: #FF9966;
   border: 2px solid rgba(255, 204, 153, 0.3);
-  padding: 0.7rem 1.2rem;
+  padding: 0.7rem 1.5rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1865,16 +1706,12 @@
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 0.9rem;
-  min-width: 100px;
 }
 
 .btn-view-details:hover {
   background: rgba(255, 204, 153, 0.2);
   color: #333333;
   border-color: #FF9966;
-  transform: translateY(-2px);
-  text-decoration: none;
 }
 
 /* Empty state for bookings */
@@ -2638,13 +2475,11 @@
 
 .tour-card .btn-book-now,
 .tour-card .btn-save,
-.tour-card .tour-price,
-.tour-card .tour-rating-badge,
-.tour-card .tour-category-badge {
+.tour-card .tour-price {
   pointer-events: auto;
 }
 
-/* RESPONSIVE MEDIA QUERIES - Mobile styles preserved exactly as before */
+/* RESPONSIVE MEDIA QUERIES */
 @media (max-width: 1024px) {
   .dashboard-toast-container {
     top: 80px;
@@ -2710,18 +2545,6 @@
   
   .tour-content {
     min-height: 300px;
-  }
-  
-  .tour-booking-actions {
-    gap: 0.6rem;
-  }
-  
-  .btn-book-now,
-  .btn-save {
-    padding: 0.7rem 0.8rem;
-    font-size: 0.9rem;
-    min-width: 90px;
-    max-width: 110px;
   }
 }
 
@@ -2844,7 +2667,7 @@
   }
   
   .tour-image {
-    height: 180px;
+    height: 200px;
   }
   
   .tour-content {
@@ -2853,55 +2676,52 @@
   }
   
   .tour-content h3 {
-    font-size: 1.2rem;
-    min-height: 2.8rem;
+    font-size: 1.3rem;
+    min-height: auto;
     -webkit-line-clamp: 2;
     margin-bottom: 0.5rem;
   }
   
   .tour-content p {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     -webkit-line-clamp: 2;
-    margin-bottom: 0.8rem;
-    line-height: 1.4;
-  }
-  
-  .tour-content > div[style*="display: grid"] {
-    margin-bottom: 0.8rem;
-    min-height: 60px;
+    margin-bottom: 1rem;
+    line-height: 1.5;
   }
   
   .tour-price {
-    font-size: 0.9rem;
-    padding: 0.4rem 0.8rem;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
   }
   
   .mobile-click-hint {
     display: block;
     text-align: center;
     margin-top: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #666;
-    padding: 0.4rem;
+    padding: 0.5rem;
     background: #FFFAF5;
     border-radius: 5px;
   }
   
   .tour-booking-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 1rem;
   }
   
   .btn-book-now,
   .btn-save {
-    padding: 0.7rem 0.8rem;
+    padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
-    min-width: 85px;
-    max-width: 100px;
+    min-width: 120px;
+    flex: 1;
   }
   
   .tour-detail-hero {
-    height: 250px;
+    height: 280px;
   }
   
   .tour-detail-title {
@@ -3012,32 +2832,6 @@
   
   .bookings-container {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .booking-card-item {
-    min-height: auto;
-    padding: 1.5rem;
-  }
-  
-  .booking-header h3 {
-    font-size: 1.1rem;
-  }
-  
-  .booking-detail {
-    font-size: 0.9rem;
-  }
-  
-  .booking-actions {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  
-  .btn-cancel-booking,
-  .btn-view-details {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    font-size: 0.9rem;
   }
   
   .page-content {
@@ -3187,7 +2981,7 @@
   }
   
   .tour-image {
-    height: 160px;
+    height: 180px;
   }
   
   .tour-content {
@@ -3195,26 +2989,14 @@
   }
   
   .tour-content h3 {
-    font-size: 1.1rem;
-    min-height: 2.5rem;
-    margin-bottom: 0.4rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
   }
   
   .tour-content p {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     line-height: 1.4;
     -webkit-line-clamp: 2;
-    margin-bottom: 0.6rem;
-  }
-  
-  .tour-content > div[style*="display: grid"] {
-    margin-bottom: 0.6rem;
-    min-height: 55px;
-    padding: 0.4rem;
-  }
-  
-  .tour-content > div[style*="display: grid"] > div {
-    font-size: 0.75rem;
   }
   
   .tour-meta {
@@ -3225,20 +3007,21 @@
   }
   
   .tour-booking-actions {
-    gap: 0.4rem;
-    margin-top: 0.8rem;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
   }
   
   .btn-book-now,
   .btn-save {
-    padding: 0.6rem 0.5rem;
-    font-size: 0.8rem;
-    min-width: 70px;
-    max-width: 85px;
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+    min-width: 100%;
   }
   
   .tour-detail-hero {
-    height: 200px;
+    height: 220px;
   }
   
   .tour-detail-title {
@@ -3375,34 +3158,6 @@
     flex-direction: column;
   }
   
-  .bookings-container {
-    gap: 1.2rem;
-  }
-  
-  .booking-card-item {
-    padding: 1.2rem;
-  }
-  
-  .booking-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .booking-header h3 {
-    font-size: 1rem;
-    white-space: normal;
-    padding-right: 0;
-  }
-  
-  .booking-status {
-    align-self: flex-start;
-  }
-  
-  .booking-detail {
-    font-size: 0.85rem;
-  }
-  
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -3449,74 +3204,6 @@
   .mobile-click-hint {
     display: block;
     background: rgba(255, 153, 102, 0.1);
-  }
-}
-
-/* Tablet and Medium Devices - Preserved exactly as before */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .tour-booking-actions {
-    gap: 0.5rem;
-  }
-  
-  .btn-book-now,
-  .btn-save {
-    padding: 0.7rem 0.6rem;
-    font-size: 0.85rem;
-    min-width: 85px;
-    max-width: 100px;
-  }
-  
-  .booking-actions {
-    flex-direction: row;
-    gap: 0.8rem;
-  }
-  
-  .btn-cancel-booking,
-  .btn-view-details {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Large Desktop - Optimized button layout */
-@media (min-width: 1440px) {
-  .tours-grid,
-  .saved-tours-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-  }
-  
-  .tour-card {
-    min-height: 520px;
-  }
-  
-  .tour-image {
-    height: 220px;
-  }
-  
-  .tour-content {
-    min-height: 300px;
-    padding: 1.8rem;
-  }
-  
-  .tour-content h3 {
-    font-size: 1.4rem;
-  }
-  
-  .tour-content p {
-    font-size: 1rem;
-  }
-  
-  .tour-booking-actions {
-    gap: 0.6rem;
-  }
-  
-  .btn-book-now,
-  .btn-save {
-    padding: 0.9rem 0.6rem;
-    font-size: 0.95rem;
-    min-width: 100px;
-    max-width: 120px;
   }
 }
 
