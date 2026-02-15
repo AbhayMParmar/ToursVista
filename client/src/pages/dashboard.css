@@ -3296,3 +3296,207 @@
     background: rgba(255, 153, 102, 0.1);
   }
 }
+
+
+/* Add these styles at the end of your dashboard.css file */
+
+/* Tour Detail Page - Enhanced Itinerary Styling */
+.tour-itinerary {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.itinerary-day {
+  background: #FFFFFF;
+  padding: 1.8rem;
+  border-radius: 15px;
+  border: 1px solid #FFE5CC;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(255, 204, 153, 0.1);
+}
+
+.itinerary-day:hover {
+  border-color: #FF9966;
+  transform: translateX(5px);
+  box-shadow: 0 8px 24px rgba(255, 153, 102, 0.15);
+}
+
+.itinerary-day::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(135deg, #FF9966, #FFCC99);
+  border-radius: 5px 0 0 5px;
+}
+
+.itinerary-day-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #FFE5CC;
+}
+
+.itinerary-day-number {
+  background: linear-gradient(135deg, #FF9966, #FFCC99);
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(255, 153, 102, 0.3);
+}
+
+.itinerary-day-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.itinerary-day p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.itinerary-day strong {
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.itinerary-activities {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.itinerary-activities li {
+  padding: 0.5rem 0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.itinerary-activities li:hover {
+  color: #333;
+  transform: translateX(5px);
+  background: rgba(255, 153, 102, 0.05);
+  padding-left: 0.5rem;
+  border-radius: 5px;
+}
+
+.itinerary-activities li::before {
+  content: '✓';
+  color: #2E8B57;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Itinerary meals and accommodation badges */
+.itinerary-day .meal-badge,
+.itinerary-day .accommodation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: #FFFAF5;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #333;
+  border: 1px solid #FFE5CC;
+}
+
+.itinerary-day .meal-badge {
+  background: rgba(46, 139, 87, 0.1);
+  color: #2E8B57;
+  border-color: rgba(46, 139, 87, 0.3);
+}
+
+.itinerary-day .accommodation-badge {
+  background: rgba(255, 153, 102, 0.1);
+  color: #FF9966;
+  border-color: rgba(255, 153, 102, 0.3);
+}
+
+/* Tour Detail Page - Itinerary Stats */
+.itinerary-stats {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.itinerary-stat {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #666;
+  border: 1px solid #eee;
+}
+
+.itinerary-stat strong {
+  color: #2E8B57;
+  margin-right: 0.25rem;
+}
+
+/* Mobile Responsive for Itinerary */
+@media (max-width: 768px) {
+  .itinerary-day {
+    padding: 1.2rem;
+  }
+  
+  .itinerary-day-header h4 {
+    font-size: 1.1rem;
+  }
+  
+  .itinerary-day-number {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  .itinerary-activities li {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .itinerary-day {
+    padding: 1rem;
+  }
+  
+  .itinerary-day-header {
+    flex-wrap: wrap;
+  }
+  
+  .itinerary-day-header h4 {
+    font-size: 1rem;
+  }
+  
+  .itinerary-day-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .itinerary-activities li {
+    font-size: 0.85rem;
+    padding: 0.4rem 0;
+  }
+}
