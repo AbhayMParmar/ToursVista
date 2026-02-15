@@ -1157,13 +1157,13 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component - UPDATED with Heart Icon for Saving
+// Tour Card Component - UPDATED with Heart Icon for Saving that works without navigation
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleSaveClick = (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Stop event from bubbling up to parent
     onSave(tour._id);
   };
 
@@ -1180,11 +1180,11 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   };
 
   const handleCardClick = (e) => {
-    // Don't trigger if clicking on action buttons or links
+    // Don't trigger if clicking on action buttons or the heart icon
     if (e.target.closest('.btn-book-now') || 
         e.target.closest('.tour-save-heart') || 
-        e.target.closest('.tour-price') ||
-        e.target.closest('.btn-rate')) {
+        e.target.closest('.btn-rate') ||
+        e.target.closest('.tour-price')) {
       return;
     }
     
@@ -1226,7 +1226,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
         />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
         
-        {/* Heart Icon for Saving - Added to top left */}
+        {/* Heart Icon for Saving - Positioned top left with proper z-index */}
         <button 
           className={`tour-save-heart ${isSaved ? 'saved' : ''}`}
           onClick={handleSaveClick}
@@ -1236,8 +1236,8 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             width="24" 
             height="24" 
             viewBox="0 0 24 24" 
-            fill={isSaved ? "#FF9966" : "none"} 
-            stroke={isSaved ? "#FF9966" : "white"}
+            fill={isSaved ? "#FF4444" : "none"} 
+            stroke={isSaved ? "#FF4444" : "#ffffff"}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
