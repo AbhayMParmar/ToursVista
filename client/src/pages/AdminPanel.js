@@ -813,7 +813,7 @@ const ToursManagement = () => {
     included: [''],
     excluded: [''],
     
-    // Itinerary
+    // Itinerary - IMPORTANT: This is where day-wise details are stored
     itinerary: [{
       day: 1,
       title: '',
@@ -859,14 +859,12 @@ const ToursManagement = () => {
       const allTours = await getTours();
       console.log('📊 Loaded tours for admin:', allTours.length);
       
-      // Log image information for debugging
+      // Log itinerary information for debugging
       allTours.forEach((tour, index) => {
-        console.log(`Tour ${index + 1}:`, {
-          title: tour.title,
-          hasImages: !!tour.images,
-          imagesCount: tour.images?.length || 0,
-          mainImage: tour.image,
-          allImages: tour.images
+        console.log(`Tour ${index + 1} "${tour.title}" - Itinerary:`, {
+          hasItinerary: !!tour.itinerary,
+          itineraryLength: tour.itinerary?.length || 0,
+          itineraryDays: tour.itinerary?.map(day => day.day) || []
         });
       });
       
@@ -889,7 +887,7 @@ const ToursManagement = () => {
       return;
     }
     
-    // Prepare tour data with image handling
+    // Prepare tour data with image handling and ENSURE itinerary is properly structured
     const tourData = {
       title: tourForm.title,
       description: tourForm.description,
@@ -916,11 +914,12 @@ const ToursManagement = () => {
       included: tourForm.included.filter(i => i.trim() !== ''),
       excluded: tourForm.excluded.filter(e => e.trim() !== ''),
       
+      // IMPORTANT: Ensure itinerary is properly formatted with all fields
       itinerary: tourForm.itinerary.map(item => ({
         day: item.day || 1,
         title: item.title || `Day ${item.day}`,
         description: item.description || '',
-        activities: item.activities.filter(a => a.trim() !== ''),
+        activities: Array.isArray(item.activities) ? item.activities.filter(a => a && a.trim() !== '') : [],
         meals: item.meals || '',
         accommodation: item.accommodation || ''
       })),
@@ -947,10 +946,16 @@ const ToursManagement = () => {
       }
     };
 
-    console.log('📦 Prepared tour data with images:', {
-      mainImage: tourData.image,
-      allImages: tourData.images,
-      imageCount: tourData.images.length
+    console.log('📦 Prepared tour data with itinerary:', {
+      title: tourData.title,
+      itineraryLength: tourData.itinerary.length,
+      itineraryDetails: tourData.itinerary.map(day => ({
+        day: day.day,
+        title: day.title,
+        activitiesCount: day.activities.length,
+        hasMeals: !!day.meals,
+        hasAccommodation: !!day.accommodation
+      }))
     });
 
     try {
@@ -1042,10 +1047,10 @@ const ToursManagement = () => {
   };
 
   const handleEditTour = (tour) => {
-    console.log('📝 Editing tour images:', {
-      mainImage: tour.image,
-      allImages: tour.images,
-      imageCount: tour.images?.length || 0
+    console.log('📝 Editing tour:', {
+      title: tour.title,
+      itineraryLength: tour.itinerary?.length || 0,
+      itineraryDays: tour.itinerary?.map(day => day.day) || []
     });
     
     setEditingTour(tour);
@@ -1073,6 +1078,7 @@ const ToursManagement = () => {
       included: tour.included?.length > 0 ? tour.included : [''],
       excluded: tour.excluded?.length > 0 ? tour.excluded : [''],
       
+      // IMPORTANT: Preserve existing itinerary when editing
       itinerary: tour.itinerary?.length > 0 ? tour.itinerary : [{
         day: 1,
         title: '',
@@ -1195,7 +1201,7 @@ const ToursManagement = () => {
     });
   };
 
-  // Itinerary helpers
+  // Itinerary helpers - CRITICAL for day-wise details
   const addItineraryDay = () => {
     const newDay = tourForm.itinerary.length + 1;
     setTourForm(prev => ({
@@ -1282,6 +1288,7 @@ const ToursManagement = () => {
                     <th>Title</th>
                     <th>Price</th>
                     <th>Duration</th>
+                    <th>Itinerary Days</th>
                     <th>Type</th>
                     <th>Region</th>
                     <th>Rating</th>
@@ -1310,6 +1317,18 @@ const ToursManagement = () => {
                       <td>{tour.title}</td>
                       <td>₹{tour.price?.toLocaleString('en-IN')}</td>
                       <td>{tour.duration}</td>
+                      <td>
+                        <span className="itinerary-days-badge" style={{
+                          background: '#f0f9f4',
+                          color: '#2E8B57',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem',
+                          fontWeight: '500'
+                        }}>
+                          {tour.itinerary?.length || 0} days
+                        </span>
+                      </td>
                       <td>
                         <span className="tour-type">{tour.category || tour.type}</span>
                       </td>
@@ -1364,6 +1383,7 @@ const ToursManagement = () => {
                   <th>Title</th>
                   <th>Price</th>
                   <th>Duration</th>
+                  <th>Itinerary Days</th>
                   <th>Type</th>
                   <th>Region</th>
                   <th>Rating</th>
@@ -1392,6 +1412,18 @@ const ToursManagement = () => {
                     <td>{tour.title}</td>
                     <td>₹{tour.price?.toLocaleString('en-IN')}</td>
                     <td>{tour.duration}</td>
+                    <td>
+                      <span className="itinerary-days-badge" style={{
+                        background: '#f0f9f4',
+                        color: '#2E8B57',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                        fontWeight: '500'
+                      }}>
+                        {tour.itinerary?.length || 0} days
+                      </span>
+                    </td>
                     <td>
                       <span className="tour-type">{tour.category || tour.type}</span>
                     </td>
@@ -1437,7 +1469,7 @@ const ToursManagement = () => {
         </>
       )}
       
-      {/* Tour Details Modal - ENHANCED with image gallery */}
+      {/* Tour Details Modal - ENHANCED with image gallery and itinerary display */}
       {showTourDetails && selectedTour && (
         <div className="modal-overlay" onClick={() => setShowTourDetails(false)}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
@@ -1488,8 +1520,8 @@ const ToursManagement = () => {
                   <p className="stat-number">{selectedTour.duration}</p>
                 </div>
                 <div className="stat-card" style={{background: 'linear-gradient(135deg, #00b894, #00a085)'}}>
-                  <h4>Group Size</h4>
-                  <p className="stat-number">{selectedTour.overview?.groupSize || 'Not specified'}</p>
+                  <h4>Itinerary Days</h4>
+                  <p className="stat-number">{selectedTour.itinerary?.length || 0} days</p>
                 </div>
                 <div className="stat-card" style={{background: 'linear-gradient(135deg, #fdcb6e, #f9a825)'}}>
                   <h4>Status</h4>
@@ -1595,16 +1627,16 @@ const ToursManagement = () => {
                     <span className="detail-value">{selectedTour.overview?.difficulty || 'Not specified'}</span>
                   </div>
                   <div className="detail-row">
+                    <span className="detail-label">Group Size</span>
+                    <span className="detail-value">{selectedTour.overview?.groupSize || 'Not specified'}</span>
+                  </div>
+                  <div className="detail-row">
                     <span className="detail-label">Age Range</span>
                     <span className="detail-value">{selectedTour.overview?.ageRange || 'Not specified'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Max Participants</span>
                     <span className="detail-value">{selectedTour.maxParticipants || 'Not specified'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Current Bookings</span>
-                    <span className="detail-value">{selectedTour.currentParticipants || 0}</span>
                   </div>
                 </div>
               </div>
@@ -1627,6 +1659,125 @@ const ToursManagement = () => {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              
+              {/* Itinerary Section - CRITICAL for displaying day-wise details */}
+              <div className="detail-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3><i>📅</i> Itinerary ({selectedTour.itinerary?.length || 0} days)</h3>
+                </div>
+                
+                {selectedTour.itinerary && selectedTour.itinerary.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {selectedTour.itinerary.map((day, index) => (
+                      <div key={index} style={{
+                        background: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '8px',
+                        border: '1px solid #eee'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          marginBottom: '0.75rem'
+                        }}>
+                          <div style={{
+                            background: '#2E8B57',
+                            color: 'white',
+                            width: '30px',
+                            height: '30px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 'bold'
+                          }}>
+                            {day.day || index + 1}
+                          </div>
+                          <h4 style={{ margin: 0, color: '#333' }}>{day.title || `Day ${day.day || index + 1}`}</h4>
+                        </div>
+                        
+                        {day.description && (
+                          <p style={{ color: '#666', marginBottom: '0.75rem' }}>{day.description}</p>
+                        )}
+                        
+                        {day.activities && day.activities.length > 0 && (
+                          <div style={{ marginBottom: '0.75rem' }}>
+                            <strong style={{ color: '#333', display: 'block', marginBottom: '0.25rem' }}>Activities:</strong>
+                            <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+                              {day.activities.map((activity, actIndex) => (
+                                <li key={actIndex} style={{ color: '#666', marginBottom: '0.25rem' }}>{activity}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {(day.meals || day.accommodation) && (
+                          <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '1rem',
+                            marginTop: '0.5rem',
+                            paddingTop: '0.5rem',
+                            borderTop: '1px solid #eee'
+                          }}>
+                            {day.meals && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span style={{ fontSize: '1.1rem' }}>🍽️</span>
+                                <span style={{ color: '#666' }}><strong>Meals:</strong> {day.meals}</span>
+                              </div>
+                            )}
+                            {day.accommodation && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span style={{ fontSize: '1.1rem' }}>🏨</span>
+                                <span style={{ color: '#666' }}><strong>Accommodation:</strong> {day.accommodation}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '2rem',
+                    background: '#f8f9fa',
+                    borderRadius: '8px',
+                    color: '#666'
+                  }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📅</div>
+                    <p>No itinerary details available for this tour.</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Included/Excluded Services */}
+              {(selectedTour.included?.length > 0 || selectedTour.excluded?.length > 0) && (
+                <div className="details-grid">
+                  {selectedTour.included?.length > 0 && (
+                    <div className="detail-card">
+                      <h3><i>✅</i> Included</h3>
+                      <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+                        {selectedTour.included.map((item, index) => (
+                          <li key={index} style={{ marginBottom: '0.25rem', color: '#666' }}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {selectedTour.excluded?.length > 0 && (
+                    <div className="detail-card">
+                      <h3><i>❌</i> Excluded</h3>
+                      <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+                        {selectedTour.excluded.map((item, index) => (
+                          <li key={index} style={{ marginBottom: '0.25rem', color: '#666' }}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -2099,10 +2250,10 @@ const ToursManagement = () => {
                   </div>
                 </div>
                 
-                {/* Itinerary */}
+                {/* Itinerary - CRITICAL section for day-wise details */}
                 <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ color: '#2E8B57', margin: 0 }}>Itinerary</h3>
+                    <h3 style={{ color: '#2E8B57', margin: 0 }}>Itinerary (Day-wise Details)</h3>
                     <button
                       type="button"
                       onClick={addItineraryDay}
@@ -2119,13 +2270,18 @@ const ToursManagement = () => {
                     </button>
                   </div>
                   
+                  <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                    Add detailed day-by-day itinerary for users to see on the dashboard
+                  </p>
+                  
                   {tourForm.itinerary.map((day, index) => (
                     <div key={index} style={{ 
                       background: '#f8f9fa', 
                       padding: '1rem', 
                       borderRadius: '8px', 
                       marginBottom: '1rem',
-                      border: '1px solid #eee'
+                      border: '1px solid #2E8B57',
+                      borderLeft: '5px solid #2E8B57'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <h4 style={{ margin: 0, color: '#2E8B57' }}>Day {day.day}</h4>
@@ -2171,7 +2327,7 @@ const ToursManagement = () => {
                             newItinerary[index].description = e.target.value;
                             setTourForm({...tourForm, itinerary: newItinerary});
                           }}
-                          placeholder="Describe the day's activities"
+                          placeholder="Describe the day's activities and highlights"
                           rows="3"
                         />
                       </div>
@@ -2188,7 +2344,7 @@ const ToursManagement = () => {
                                 newItinerary[index].activities[activityIndex] = e.target.value;
                                 setTourForm({...tourForm, itinerary: newItinerary});
                               }}
-                              placeholder="e.g., Arrival at destination airport"
+                              placeholder="e.g., Visit Amber Fort"
                               style={{ flex: 1 }}
                             />
                             <button
@@ -2263,6 +2419,228 @@ const ToursManagement = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+                
+                {/* Requirements */}
+                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#2E8B57' }}>Requirements</h3>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Physical Level</label>
+                      <input
+                        type="text"
+                        value={tourForm.requirements.physicalLevel}
+                        onChange={(e) => setTourForm({
+                          ...tourForm,
+                          requirements: {...tourForm.requirements, physicalLevel: e.target.value}
+                        })}
+                        placeholder="e.g., Moderate"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Fitness Level</label>
+                      <input
+                        type="text"
+                        value={tourForm.requirements.fitnessLevel}
+                        onChange={(e) => setTourForm({
+                          ...tourForm,
+                          requirements: {...tourForm.requirements, fitnessLevel: e.target.value}
+                        })}
+                        placeholder="e.g., Good health condition"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Required Documents</label>
+                    {tourForm.requirements.documents.map((doc, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <input
+                          type="text"
+                          value={doc}
+                          onChange={(e) => updateArrayItem('documents', index, e.target.value, 'requirements')}
+                          placeholder="e.g., Valid passport"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem('documents', index, 'requirements')}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addArrayItem('documents', 'requirements')}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: '#2E8B57',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '0.5rem'
+                      }}
+                    >
+                      + Add Document
+                    </button>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Packing List</label>
+                    {tourForm.requirements.packingList.map((item, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <input
+                          type="text"
+                          value={item}
+                          onChange={(e) => updateArrayItem('packingList', index, e.target.value, 'requirements')}
+                          placeholder="e.g., Comfortable walking shoes"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem('packingList', index, 'requirements')}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addArrayItem('packingList', 'requirements')}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: '#2E8B57',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        marginTop: '0.5rem'
+                      }}
+                    >
+                      + Add Item
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Pricing */}
+                <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #eee' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#2E8B57' }}>Pricing & Policies</h3>
+                  
+                  <div className="form-group">
+                    <label>Base Price</label>
+                    <input
+                      type="number"
+                      value={tourForm.pricing.basePrice}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        pricing: {...tourForm.pricing, basePrice: e.target.value}
+                      })}
+                      placeholder="Enter base price"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Payment Policy</label>
+                    <input
+                      type="text"
+                      value={tourForm.pricing.paymentPolicy}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        pricing: {...tourForm.pricing, paymentPolicy: e.target.value}
+                      })}
+                      placeholder="e.g., 50% advance, balance upon arrival"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Cancellation Policy</label>
+                    <input
+                      type="text"
+                      value={tourForm.pricing.cancellationPolicy}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        pricing: {...tourForm.pricing, cancellationPolicy: e.target.value}
+                      })}
+                      placeholder="e.g., Free cancellation 7 days before travel"
+                    />
+                  </div>
+                </div>
+                
+                {/* Important Info */}
+                <div style={{ marginBottom: '2rem' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#2E8B57' }}>Important Information</h3>
+                  
+                  <div className="form-group">
+                    <label>Booking Cutoff</label>
+                    <input
+                      type="text"
+                      value={tourForm.importantInfo.bookingCutoff}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        importantInfo: {...tourForm.importantInfo, bookingCutoff: e.target.value}
+                      })}
+                      placeholder="e.g., 48 hours before departure"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Refund Policy</label>
+                    <input
+                      type="text"
+                      value={tourForm.importantInfo.refundPolicy}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        importantInfo: {...tourForm.importantInfo, refundPolicy: e.target.value}
+                      })}
+                      placeholder="e.g., Full refund for cancellations 7+ days prior"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Health Advisory</label>
+                    <input
+                      type="text"
+                      value={tourForm.importantInfo.healthAdvisory}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        importantInfo: {...tourForm.importantInfo, healthAdvisory: e.target.value}
+                      })}
+                      placeholder="e.g., Travel insurance recommended"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Safety Measures</label>
+                    <input
+                      type="text"
+                      value={tourForm.importantInfo.safetyMeasures}
+                      onChange={(e) => setTourForm({
+                        ...tourForm,
+                        importantInfo: {...tourForm.importantInfo, safetyMeasures: e.target.value}
+                      })}
+                      placeholder="e.g., Experienced guides, first aid kit available"
+                    />
+                  </div>
                 </div>
               </div>
               
