@@ -1157,7 +1157,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component - ENHANCED to show admin-added details
+// Tour Card Component - UPDATED with Heart Icon for Saving
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -1182,8 +1182,9 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const handleCardClick = (e) => {
     // Don't trigger if clicking on action buttons or links
     if (e.target.closest('.btn-book-now') || 
-        e.target.closest('.btn-save') || 
-        e.target.closest('.tour-price')) {
+        e.target.closest('.tour-save-heart') || 
+        e.target.closest('.tour-price') ||
+        e.target.closest('.btn-rate')) {
       return;
     }
     
@@ -1224,6 +1225,27 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           }}
         />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
+        
+        {/* Heart Icon for Saving - Added to top left */}
+        <button 
+          className={`tour-save-heart ${isSaved ? 'saved' : ''}`}
+          onClick={handleSaveClick}
+          aria-label={isSaved ? 'Remove from saved' : 'Save tour'}
+        >
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill={isSaved ? "#FF9966" : "none"} 
+            stroke={isSaved ? "#FF9966" : "white"}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+        
         {/* Rating badge on image */}
         <div className="tour-rating-badge">
           <span style={{ fontSize: '1rem', color: '#FF9966' }}>★</span>
@@ -1244,6 +1266,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             ({tour.totalRatings || 0})
           </span>
         </div>
+        
         {/* Tour category badge */}
         <div className="tour-category-badge">
           <span style={{ 
@@ -1328,15 +1351,22 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
              Book Now
           </button>
           <button 
-            className={`btn-save ${isSaved ? 'saved' : ''}`} 
-            onClick={handleSaveClick}
-          >
-            {isSaved ? '✓ Saved' : '💾 Save'}
-          </button>
-          <button 
-            className="btn-save" 
+            className="btn-rate" 
             onClick={handleRateClick}
-            style={{ background: '#FFFAF5', color: '#FF9966', borderColor: '#FF9966' }}
+            style={{ 
+              background: '#FFFAF5', 
+              color: '#FF9966', 
+              borderColor: '#FF9966',
+              padding: '0.8rem 1.8rem',
+              border: '2px solid #FF9966',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              flex: '1',
+              minWidth: '100px',
+              whiteSpace: 'nowrap'
+            }}
           >
             ⭐ Rate
           </button>
@@ -2678,7 +2708,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Keep the 💾 Save for Later button as is */}
       <div className="tour-detail-actions">
         <button 
           className="btn-book-tour"
@@ -2778,7 +2808,7 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour, onView
         <div className="saved-tours-empty">
           <div className="saved-tours-empty-icon">💾</div>
           <h3 style={{ color: '#333', marginBottom: '1rem' }}>No Saved Tours</h3>
-          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Save tours you're interested in by clicking the Save button on any tour.</p>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Save tours you're interested in by clicking the heart icon on any tour card.</p>
           <Link to="/dashboard/tours" className="btn-details">Browse Tours</Link>
         </div>
         <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
