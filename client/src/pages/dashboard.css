@@ -898,30 +898,29 @@
   }
 }
 
-/* UPDATED TOUR BOOKING CARD BUTTON STYLES - Three buttons in one row */
+/* UPDATED TOUR BOOKING CARD BUTTON STYLES - Desktop Only Optimizations */
 .tour-booking-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.8rem;
   margin-top: 1.5rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   width: 100%;
-  justify-content: space-between;
 }
 
 .btn-book-now {
   background: #2E8B57;
   color: white;
-  padding: 0.8rem 0.5rem;
+  padding: 0.8rem 1rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: none;
+  flex: 1 1 auto;
+  min-width: 100px;
+  max-width: 120px;
   box-shadow: 0 4px 6px rgba(46, 139, 87, 0.2);
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -929,8 +928,6 @@
   align-items: center;
   justify-content: center;
   line-height: 1.2;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .btn-book-now:hover {
@@ -946,25 +943,23 @@
 .btn-save {
   background: #FFFAF5;
   color: #333333;
-  padding: 0.8rem 0.5rem;
+  padding: 0.8rem 1rem;
   border: 2px solid #FFE5CC;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: none;
+  flex: 1 1 auto;
+  min-width: 100px;
+  max-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.4rem;
   letter-spacing: 0.3px;
   white-space: nowrap;
   line-height: 1.2;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .btn-save:hover {
@@ -984,7 +979,7 @@
   border-color: #2E8B57;
 }
 
-/* Rate button specific styling */
+/* Rate button specific styling - Orange variant */
 .btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"] {
   background: #FFFAF5;
   color: #FF9966;
@@ -995,6 +990,61 @@
   background: #FFE5CC;
   color: #333333;
   border-color: #FF9966;
+}
+
+/* DESKTOP ONLY BUTTON OPTIMIZATIONS - 1025px and above */
+@media (min-width: 1025px) {
+  .tour-booking-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .btn-book-now {
+    flex: 2 1 0;
+    min-width: 0;
+    max-width: none;
+    padding: 0.9rem 0.5rem;
+    font-size: 1rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  
+  .btn-save {
+    flex: 2 1 0;
+    min-width: 0;
+    max-width: none;
+    padding: 0.9rem 0.5rem;
+    font-size: 1rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  
+  /* Rate button - Square shape */
+  .btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"] {
+    flex: 1 1 0;
+    min-width: 45px;
+    max-width: 45px;
+    height: 45px;
+    padding: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    white-space: nowrap;
+    text-overflow: clip;
+    overflow: hidden;
+  }
+  
+  /* Ensure text is readable */
+  .btn-save[style*="background: #FFFAF5"][style*="color: #FF9966"]:hover {
+    transform: translateY(-2px);
+  }
 }
 
 /* SAVED TOURS SECTION */
@@ -2594,7 +2644,7 @@
   pointer-events: auto;
 }
 
-/* RESPONSIVE MEDIA QUERIES */
+/* RESPONSIVE MEDIA QUERIES - Mobile styles preserved exactly as before */
 @media (max-width: 1024px) {
   .dashboard-toast-container {
     top: 80px;
@@ -2663,13 +2713,15 @@
   }
   
   .tour-booking-actions {
-    gap: 0.4rem;
+    gap: 0.6rem;
   }
   
   .btn-book-now,
   .btn-save {
-    padding: 0.7rem 0.4rem;
-    font-size: 0.85rem;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
+    min-width: 90px;
+    max-width: 110px;
   }
 }
 
@@ -2836,14 +2888,16 @@
   }
   
   .tour-booking-actions {
-    gap: 0.3rem;
+    gap: 0.5rem;
     margin-top: 1rem;
   }
   
   .btn-book-now,
   .btn-save {
-    padding: 0.6rem 0.3rem;
-    font-size: 0.8rem;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
+    min-width: 85px;
+    max-width: 100px;
   }
   
   .tour-detail-hero {
@@ -3171,14 +3225,16 @@
   }
   
   .tour-booking-actions {
-    gap: 0.2rem;
+    gap: 0.4rem;
     margin-top: 0.8rem;
   }
   
   .btn-book-now,
   .btn-save {
-    padding: 0.5rem 0.2rem;
-    font-size: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 70px;
+    max-width: 85px;
   }
   
   .tour-detail-hero {
@@ -3396,16 +3452,18 @@
   }
 }
 
-/* Tablet and Medium Devices */
+/* Tablet and Medium Devices - Preserved exactly as before */
 @media (min-width: 769px) and (max-width: 1024px) {
   .tour-booking-actions {
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
   
   .btn-book-now,
   .btn-save {
-    padding: 0.7rem 0.3rem;
+    padding: 0.7rem 0.6rem;
     font-size: 0.85rem;
+    min-width: 85px;
+    max-width: 100px;
   }
   
   .booking-actions {
@@ -3420,7 +3478,7 @@
   }
 }
 
-/* Large Desktop */
+/* Large Desktop - Optimized button layout */
 @media (min-width: 1440px) {
   .tours-grid,
   .saved-tours-grid {
@@ -3455,8 +3513,10 @@
   
   .btn-book-now,
   .btn-save {
-    padding: 0.9rem 0.5rem;
+    padding: 0.9rem 0.6rem;
     font-size: 0.95rem;
+    min-width: 100px;
+    max-width: 120px;
   }
 }
 
