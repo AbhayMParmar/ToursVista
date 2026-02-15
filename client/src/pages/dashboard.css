@@ -2137,6 +2137,46 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
+/* Heart Icon for Tour Detail Page */
+.tour-detail-save-heart {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background: transparent;
+  border: none;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.tour-detail-save-heart:hover {
+  transform: scale(1.1);
+}
+
+.tour-detail-save-heart.saved svg {
+  fill: #FF4444;
+  stroke: #FF4444;
+}
+
+.tour-detail-save-heart svg {
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  stroke: #ffffff;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.tour-detail-save-heart:hover svg {
+  filter: drop-shadow(0 4px 8px rgba(255, 68, 68, 0.6));
+}
+
 .tour-detail-content {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -2687,7 +2727,7 @@
   pointer-events: auto;
 }
 
-/* Mobile Responsive for Rate Button and Heart Icon */
+/* Mobile Responsive for Rate Button, Heart Icons, and Category Badge */
 @media (max-width: 768px) {
   .btn-rate-unique {
     padding: 0.7rem 1.2rem;
@@ -2716,6 +2756,16 @@
   .tour-category-badge span {
     font-size: 0.65rem;
     padding: 3px 8px;
+  }
+  
+  .tour-detail-save-heart {
+    top: 1.5rem;
+    left: 1.5rem;
+  }
+  
+  .tour-detail-save-heart svg {
+    width: 28px;
+    height: 28px;
   }
 }
 
@@ -2747,6 +2797,16 @@
   .tour-category-badge span {
     font-size: 0.6rem;
     padding: 2px 6px;
+  }
+  
+  .tour-detail-save-heart {
+    top: 1rem;
+    left: 1rem;
+  }
+  
+  .tour-detail-save-heart svg {
+    width: 24px;
+    height: 24px;
   }
 }
 
