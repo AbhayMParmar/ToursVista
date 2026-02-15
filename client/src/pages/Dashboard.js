@@ -1160,6 +1160,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
 // Tour Card Component - UPDATED with Heart Icon for Saving that works without navigation
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isHeartHovered, setIsHeartHovered] = useState(false);
 
   const handleSaveClick = (e) => {
     e.preventDefault();
@@ -1211,9 +1212,9 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
       style={{ 
         cursor: 'pointer',
         position: 'relative',
-        transform: isHovered ? 'translateY(-10px)' : 'translateY(0)',
+        transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-        boxShadow: isHovered ? '0 10px 30px rgba(0,0,0,0.15)' : '0 4px 15px rgba(0,0,0,0.1)'
+        boxShadow: isHovered ? '0 8px 25px rgba(0,0,0,0.12)' : '0 4px 15px rgba(0,0,0,0.1)'
       }}
     >
       <div className="tour-image">
@@ -1226,21 +1227,27 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
         />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
         
-        {/* Heart Icon for Saving - Positioned top left with proper z-index */}
+        {/* Simplified Heart Icon - No Circle Background */}
         <button 
           className={`tour-save-heart ${isSaved ? 'saved' : ''}`}
           onClick={handleSaveClick}
+          onMouseEnter={() => setIsHeartHovered(true)}
+          onMouseLeave={() => setIsHeartHovered(false)}
           aria-label={isSaved ? 'Remove from saved' : 'Save tour'}
         >
           <svg 
-            width="24" 
-            height="24" 
+            width="28" 
+            height="28" 
             viewBox="0 0 24 24" 
             fill={isSaved ? "#FF4444" : "none"} 
-            stroke={isSaved ? "#FF4444" : "#ffffff"}
+            stroke={isSaved ? "#FF4444" : (isHeartHovered ? "#FF4444" : "#ffffff")}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            style={{
+              filter: isHeartHovered ? 'drop-shadow(0 2px 4px rgba(255, 68, 68, 0.3))' : 'none',
+              transition: 'all 0.2s ease'
+            }}
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
           </svg>
@@ -1375,7 +1382,6 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
     </div>
   );
 };
-
 // Dashboard Home Component
 const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSaveTour, onRateTour, onViewTourDetails }) => {
   const [searchQuery, setSearchQuery] = useState('');
