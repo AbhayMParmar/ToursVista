@@ -1318,7 +1318,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
         
         <div className="tour-booking-actions">
           <button className="btn-book-now" onClick={handleBookClick}>
-            <span style={{ marginRight: '0.25rem' }}>✈️</span> Book Now
+             Book Now
           </button>
           <button 
             className={`btn-save ${isSaved ? 'saved' : ''}`} 
