@@ -1257,11 +1257,11 @@
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  padding: 8px; /* Increased touch target */
-  margin: -8px; /* Offset padding to maintain position */
+  padding: 8px;
+  margin: -8px;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation; /* Improve touch response */
+  touch-action: manipulation;
 }
 
 .tour-save-heart:hover {
@@ -1280,7 +1280,7 @@
   stroke: #ffffff;
   stroke-width: 2;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  pointer-events: none; /* Let the button handle clicks */
+  pointer-events: none;
 }
 
 .tour-save-heart:hover svg {
@@ -1299,7 +1299,7 @@
   align-items: center;
   gap: 0.2rem;
   z-index: 2;
-  pointer-events: none; /* Prevent interference with clicks */
+  pointer-events: none;
 }
 
 /* Tour category badge - moved to bottom right */
@@ -1308,7 +1308,7 @@
   bottom: 1rem;
   right: 1rem;
   z-index: 2;
-  pointer-events: none; /* Prevent interference with clicks */
+  pointer-events: none;
 }
 
 .tour-category-badge span {
@@ -1471,7 +1471,7 @@
   flex-wrap: wrap;
 }
 
-.btn-profile {
+.btn-edit-profile {
   background: linear-gradient(135deg, #FF9966, #FFB088);
   color: white;
   padding: 1rem 2rem;
@@ -1493,7 +1493,7 @@
   letter-spacing: 0.5px;
 }
 
-.btn-profile::before {
+.btn-edit-profile::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -1507,23 +1507,23 @@
   z-index: 1;
 }
 
-.btn-profile:hover {
+.btn-edit-profile:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(255, 153, 102, 0.4);
   background: linear-gradient(135deg, #FF8866, #FFA078);
 }
 
-.btn-profile:hover::before {
+.btn-edit-profile:hover::before {
   width: 300px;
   height: 300px;
 }
 
-.btn-profile:active {
+.btn-edit-profile:active {
   transform: translateY(-1px);
   box-shadow: 0 5px 15px rgba(255, 153, 102, 0.3);
 }
 
-.btn-profile-secondary {
+.btn-travel-preferences {
   background: transparent;
   color: #2E8B57;
   border: 2px solid #2E8B57;
@@ -1544,7 +1544,7 @@
   letter-spacing: 0.5px;
 }
 
-.btn-profile-secondary::before {
+.btn-travel-preferences::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -1558,24 +1558,24 @@
   z-index: -1;
 }
 
-.btn-profile-secondary:hover {
+.btn-travel-preferences:hover {
   color: white;
   background: #2E8B57;
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(46, 139, 87, 0.3);
 }
 
-.btn-profile-secondary:hover::before {
+.btn-travel-preferences:hover::before {
   width: 300px;
   height: 300px;
 }
 
-.btn-profile-secondary:active {
+.btn-travel-preferences:active {
   transform: translateY(-1px);
   box-shadow: 0 5px 15px rgba(46, 139, 87, 0.2);
 }
 
-.btn-profile-outline {
+.btn-view-bookings {
   background: transparent;
   color: #666666;
   border: 2px solid #FFE5CC;
@@ -1592,18 +1592,62 @@
   min-width: 160px;
   text-decoration: none;
   letter-spacing: 0.5px;
+  background: #FFFAF5;
 }
 
-.btn-profile-outline:hover {
-  background: #FFFAF5;
+.btn-view-bookings:hover {
+  background: #FFE5CC;
   color: #FF9966;
   border-color: #FF9966;
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(255, 153, 102, 0.15);
 }
 
-.btn-profile-outline:active {
+.btn-view-bookings:active {
   transform: translateY(-1px);
+}
+
+.btn-view-saved {
+  background: transparent;
+  color: #FF9966;
+  border: 2px solid #FF9966;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-width: 160px;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.btn-view-saved:hover {
+  background: #FF9966;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 153, 102, 0.3);
+}
+
+.btn-view-saved:active {
+  transform: translateY(-1px);
+}
+
+/* Profile button icons */
+.profile-btn-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-edit-profile:hover .profile-btn-icon,
+.btn-travel-preferences:hover .profile-btn-icon,
+.btn-view-bookings:hover .profile-btn-icon,
+.btn-view-saved:hover .profile-btn-icon {
+  transform: scale(1.1);
 }
 
 /* Footer */
@@ -2300,11 +2344,11 @@
   justify-content: center;
   cursor: pointer;
   z-index: 20;
-  padding: 10px; /* Increased touch target */
-  margin: -10px; /* Offset padding to maintain position */
+  padding: 10px;
+  margin: -10px;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation; /* Improve touch response */
+  touch-action: manipulation;
 }
 
 .tour-detail-save-heart:hover {
@@ -2323,7 +2367,7 @@
   stroke: #ffffff;
   stroke-width: 2;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
-  pointer-events: none; /* Let the button handle clicks */
+  pointer-events: none;
 }
 
 .tour-detail-save-heart:hover svg {
@@ -2880,7 +2924,7 @@
   pointer-events: auto;
 }
 
-/* Mobile Responsive for Rate Button, Heart Icons, and Category Badge */
+/* Mobile Responsive for Rate Button, Heart Icons, Category Badge, and Profile Buttons */
 @media (max-width: 768px) {
   .btn-rate-unique {
     padding: 0.7rem 1.2rem;
@@ -2894,7 +2938,7 @@
   .tour-save-heart {
     top: 0.8rem;
     left: 0.8rem;
-    padding: 10px; /* Larger touch target on mobile */
+    padding: 10px;
     margin: -10px;
   }
   
@@ -2916,7 +2960,7 @@
   .tour-detail-save-heart {
     top: 1.5rem;
     left: 1.5rem;
-    padding: 12px; /* Larger touch target on mobile */
+    padding: 12px;
     margin: -12px;
   }
   
@@ -2925,9 +2969,14 @@
     height: 28px;
   }
   
-  .btn-profile,
-  .btn-profile-secondary,
-  .btn-profile-outline {
+  .profile-actions {
+    gap: 0.8rem;
+  }
+  
+  .btn-edit-profile,
+  .btn-travel-preferences,
+  .btn-view-bookings,
+  .btn-view-saved {
     min-width: 140px;
     padding: 0.9rem 1.5rem;
     font-size: 0.95rem;
@@ -2947,7 +2996,7 @@
   .tour-save-heart {
     top: 0.6rem;
     left: 0.6rem;
-    padding: 12px; /* Even larger touch target on small mobile */
+    padding: 12px;
     margin: -12px;
   }
   
@@ -2969,7 +3018,7 @@
   .tour-detail-save-heart {
     top: 1rem;
     left: 1rem;
-    padding: 14px; /* Larger touch target on small mobile */
+    padding: 14px;
     margin: -14px;
   }
   
@@ -2983,9 +3032,10 @@
     gap: 0.8rem;
   }
   
-  .btn-profile,
-  .btn-profile-secondary,
-  .btn-profile-outline {
+  .btn-edit-profile,
+  .btn-travel-preferences,
+  .btn-view-bookings,
+  .btn-view-saved {
     width: 100%;
     min-width: 100%;
     padding: 1rem;
