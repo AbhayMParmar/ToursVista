@@ -1463,7 +1463,7 @@
   font-weight: 500;
 }
 
-/* PROFILE SECTION BUTTONS - Enhanced Styles */
+/* PROFILE SECTION BUTTONS - Clean and Simple as per Image */
 .profile-actions {
   display: flex;
   gap: 1rem;
@@ -1471,183 +1471,37 @@
   flex-wrap: wrap;
 }
 
-.btn-edit-profile {
-  background: linear-gradient(135deg, #FF9966, #FFB088);
-  color: white;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 10px rgba(255, 153, 102, 0.3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  min-width: 160px;
-  position: relative;
-  overflow: hidden;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-}
-
-.btn-edit-profile::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-  z-index: 1;
-}
-
-.btn-edit-profile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255, 153, 102, 0.4);
-  background: linear-gradient(135deg, #FF8866, #FFA078);
-}
-
-.btn-edit-profile:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.btn-edit-profile:active {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(255, 153, 102, 0.3);
-}
-
-.btn-travel-preferences {
-  background: transparent;
-  color: #2E8B57;
-  border: 2px solid #2E8B57;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  min-width: 160px;
-  position: relative;
-  overflow: hidden;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-}
-
-.btn-travel-preferences::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(46, 139, 87, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-  z-index: -1;
-}
-
-.btn-travel-preferences:hover {
-  color: white;
-  background: #2E8B57;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(46, 139, 87, 0.3);
-}
-
-.btn-travel-preferences:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.btn-travel-preferences:active {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(46, 139, 87, 0.2);
-}
-
-.btn-view-bookings {
-  background: transparent;
-  color: #666666;
-  border: 2px solid #FFE5CC;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  min-width: 160px;
-  text-decoration: none;
-  letter-spacing: 0.5px;
+.btn-profile {
   background: #FFFAF5;
+  color: #333333;
+  padding: 0.8rem 1.8rem;
+  border: 2px solid #FFE5CC;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 140px;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
-.btn-view-bookings:hover {
+.btn-profile:hover {
   background: #FFE5CC;
-  color: #FF9966;
+  color: #333333;
   border-color: #FF9966;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(255, 153, 102, 0.15);
+  box-shadow: 0 4px 8px rgba(255, 153, 102, 0.1);
 }
 
-.btn-view-bookings:active {
+.btn-profile:active {
   transform: translateY(-1px);
-}
-
-.btn-view-saved {
-  background: transparent;
-  color: #FF9966;
-  border: 2px solid #FF9966;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  min-width: 160px;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-}
-
-.btn-view-saved:hover {
-  background: #FF9966;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 153, 102, 0.3);
-}
-
-.btn-view-saved:active {
-  transform: translateY(-1px);
-}
-
-/* Profile button icons */
-.profile-btn-icon {
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
-}
-
-.btn-edit-profile:hover .profile-btn-icon,
-.btn-travel-preferences:hover .profile-btn-icon,
-.btn-view-bookings:hover .profile-btn-icon,
-.btn-view-saved:hover .profile-btn-icon {
-  transform: scale(1.1);
+  box-shadow: 0 2px 4px rgba(255, 153, 102, 0.1);
 }
 
 /* Footer */
@@ -2971,15 +2825,13 @@
   
   .profile-actions {
     gap: 0.8rem;
+    justify-content: center;
   }
   
-  .btn-edit-profile,
-  .btn-travel-preferences,
-  .btn-view-bookings,
-  .btn-view-saved {
-    min-width: 140px;
-    padding: 0.9rem 1.5rem;
-    font-size: 0.95rem;
+  .btn-profile {
+    min-width: 130px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -3032,14 +2884,11 @@
     gap: 0.8rem;
   }
   
-  .btn-edit-profile,
-  .btn-travel-preferences,
-  .btn-view-bookings,
-  .btn-view-saved {
+  .btn-profile {
     width: 100%;
     min-width: 100%;
-    padding: 1rem;
-    font-size: 1rem;
+    padding: 0.8rem;
+    font-size: 0.95rem;
   }
 }
 
