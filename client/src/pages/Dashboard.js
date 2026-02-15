@@ -1157,7 +1157,7 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component - UPDATED with Heart Icon for Saving that works without navigation
+// Tour Card Component - UPDATED with Heart Icon (No Background) and Fixed Rate Button
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isHeartHovered, setIsHeartHovered] = useState(false);
@@ -1171,7 +1171,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const handleRateClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    onRate(tour);
+    onRate(tour); // This opens the rating modal without navigation
   };
 
   const handleBookClick = (e) => {
@@ -1227,7 +1227,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
         />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
         
-        {/* Simplified Heart Icon - No Circle Background */}
+        {/* Heart Icon - No Background, Just the Heart */}
         <button 
           className={`tour-save-heart ${isSaved ? 'saved' : ''}`}
           onClick={handleSaveClick}
@@ -1245,7 +1245,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             strokeLinecap="round"
             strokeLinejoin="round"
             style={{
-              filter: isHeartHovered ? 'drop-shadow(0 2px 4px rgba(255, 68, 68, 0.3))' : 'none',
+              filter: isHeartHovered ? 'drop-shadow(0 2px 4px rgba(255, 68, 68, 0.3))' : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
               transition: 'all 0.2s ease'
             }}
           >
@@ -1357,31 +1357,20 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           <button className="btn-book-now" onClick={handleBookClick}>
              Book Now
           </button>
+          {/* Unique Rate Button Design */}
           <button 
-            className="btn-rate" 
+            className="btn-rate-unique" 
             onClick={handleRateClick}
-            style={{ 
-              background: '#FFFAF5', 
-              color: '#FF9966', 
-              borderColor: '#FF9966',
-              padding: '0.8rem 1.8rem',
-              border: '2px solid #FF9966',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              flex: '1',
-              minWidth: '100px',
-              whiteSpace: 'nowrap'
-            }}
           >
-            ⭐ Rate
+            <span className="rate-star">⭐</span>
+            <span className="rate-text">Rate</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
+
 // Dashboard Home Component
 const DashboardHome = ({ user, tours, savedTours, userBookings, onBookTour, onSaveTour, onRateTour, onViewTourDetails }) => {
   const [searchQuery, setSearchQuery] = useState('');
