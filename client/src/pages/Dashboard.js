@@ -1184,7 +1184,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
     // Don't trigger if clicking on action buttons or the heart icon
     if (e.target.closest('.btn-book-now') || 
         e.target.closest('.tour-save-heart') || 
-        e.target.closest('.btn-rate') ||
+        e.target.closest('.btn-rate-unique') ||
         e.target.closest('.tour-price')) {
       return;
     }
@@ -1245,7 +1245,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             strokeLinecap="round"
             strokeLinejoin="round"
             style={{
-              filter: isHeartHovered ? 'drop-shadow(0 2px 4px rgba(255, 68, 68, 0.3))' : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+              filter: isHeartHovered ? 'drop-shadow(0 2px 4px rgba(255, 68, 68, 0.4))' : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))',
               transition: 'all 0.2s ease'
             }}
           >
@@ -1274,16 +1274,9 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           </span>
         </div>
         
-        {/* Tour category badge */}
+        {/* Tour category badge - moved to bottom right */}
         <div className="tour-category-badge">
-          <span style={{ 
-            fontSize: '0.7rem',
-            fontWeight: '600',
-            color: 'white',
-            background: 'rgba(46, 139, 87, 0.8)',
-            padding: '2px 8px',
-            borderRadius: '10px'
-          }}>
+          <span>
             {tour.category}
           </span>
         </div>
@@ -1357,7 +1350,7 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           <button className="btn-book-now" onClick={handleBookClick}>
              Book Now
           </button>
-          {/* Unique Rate Button Design */}
+          {/* Advanced Unique Rate Button Design */}
           <button 
             className="btn-rate-unique" 
             onClick={handleRateClick}
@@ -1916,7 +1909,7 @@ const ProfilePage = ({ user, userBookings, savedTours, onEditProfile }) => {
   );
 };
 
-// Tour Detail Page Component - COMPLETELY REWRITTEN to properly display all admin-added data including itinerary
+// Tour Detail Page Component - UPDATED with Heart Icon on Image
 const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour }) => {
   const location = useLocation();
   const tourId = location.pathname.split('/').pop();
@@ -1927,6 +1920,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
   const [loading, setLoading] = useState(false);
   const [tourDetails, setTourDetails] = useState(null);
   const [error, setError] = useState(null);
+  const [isHeartHovered, setIsHeartHovered] = useState(false);
 
   // Fetch complete tour details including all admin-added data
   useEffect(() => {
@@ -2045,6 +2039,14 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
     
     fetchTourDetails();
   }, [tourId, tours]);
+
+  const handleSaveClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (tourDetails) {
+      onSaveTour(tourDetails._id);
+    }
+  };
 
   if (loading) {
     return (
@@ -2442,6 +2444,33 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               e.target.src = 'https://via.placeholder.com/800x400?text=Tour+Image';
             }}
           />
+          
+          {/* Heart Icon on Detail Page Image - Top Left */}
+          <button 
+            className={`tour-detail-save-heart ${isSaved ? 'saved' : ''}`}
+            onClick={handleSaveClick}
+            onMouseEnter={() => setIsHeartHovered(true)}
+            onMouseLeave={() => setIsHeartHovered(false)}
+            aria-label={isSaved ? 'Remove from saved' : 'Save tour'}
+          >
+            <svg 
+              width="32" 
+              height="32" 
+              viewBox="0 0 24 24" 
+              fill={isSaved ? "#FF4444" : "none"} 
+              stroke={isSaved ? "#FF4444" : (isHeartHovered ? "#FF4444" : "#ffffff")}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                filter: isHeartHovered ? 'drop-shadow(0 2px 6px rgba(255, 68, 68, 0.5))' : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4))',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+          
           <div className="tour-detail-overlay">
             <h2 className="tour-detail-title">{tourDetails.title}</h2>
             <p className="tour-detail-subtitle">{tourDetails.description}</p>
