@@ -3500,3 +3500,73 @@
     padding: 0.4rem 0;
   }
 }
+
+
+
+/* Heart Icon for Saving Tours */
+.tour-save-heart {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 0;
+}
+
+.tour-save-heart:hover {
+  transform: scale(1.1);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tour-save-heart.saved {
+  background: #FF9966;
+}
+
+.tour-save-heart.saved svg {
+  fill: #FF9966;
+  stroke: #FF9966;
+}
+
+.tour-save-heart svg {
+  width: 22px;
+  height: 22px;
+  transition: all 0.3s ease;
+}
+
+/* Adjust for mobile */
+@media (max-width: 768px) {
+  .tour-save-heart {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .tour-save-heart svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tour-save-heart {
+    width: 32px;
+    height: 32px;
+    top: 0.8rem;
+    left: 0.8rem;
+  }
+  
+  .tour-save-heart svg {
+    width: 16px;
+    height: 16px;
+  }
+}
