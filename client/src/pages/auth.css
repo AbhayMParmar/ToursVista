@@ -53,26 +53,27 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 400px;
+    max-width: 450px;
     width: 90%;
     pointer-events: none;
 }
 
 .auth-toast {
     background: white;
-    border-radius: 8px;
-    padding: 12px 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    padding: 18px 22px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     animation: swipeDown 0.3s ease forwards;
     transform: translateY(-100%);
     opacity: 0;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     max-width: 100%;
     pointer-events: auto;
-    border-left: 4px solid;
-    font-size: 14px;
+    border-left: 5px solid;
+    font-size: 15px;
+    min-height: 70px;
 }
 
 .auth-toast.hiding {
@@ -92,10 +93,10 @@
 }
 
 .auth-toast-icon {
-    font-size: 18px;
+    font-size: 22px;
     flex-shrink: 0;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -104,12 +105,12 @@
 
 .auth-toast.success .auth-toast-icon {
     color: var(--success-color);
-    background: rgba(81, 207, 102, 0.1);
+    background: rgba(81, 207, 102, 0.15);
 }
 
 .auth-toast.error .auth-toast-icon {
     color: var(--danger-color);
-    background: rgba(255, 107, 107, 0.1);
+    background: rgba(255, 107, 107, 0.15);
 }
 
 .auth-toast-content {
@@ -117,22 +118,23 @@
 }
 
 .auth-toast-message {
-    font-weight: 500;
-    line-height: 1.4;
+    font-weight: 600;
+    line-height: 1.5;
+    font-size: 16px;
 }
 
 .auth-toast-close {
     background: none;
     border: none;
     color: currentColor;
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
     padding: 0;
     border-radius: 4px;
     transition: all 0.2s ease;
     flex-shrink: 0;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -715,8 +717,25 @@
     }
     
     .auth-toast {
-        padding: 10px 14px;
-        font-size: 13px;
+        padding: 16px 18px;
+        font-size: 14px;
+        min-height: 65px;
+    }
+    
+    .auth-toast-icon {
+        font-size: 20px;
+        width: 28px;
+        height: 28px;
+    }
+    
+    .auth-toast-message {
+        font-size: 15px;
+    }
+    
+    .auth-toast-close {
+        font-size: 22px;
+        width: 26px;
+        height: 26px;
     }
     
     /* Mobile-specific container adjustments */
@@ -945,8 +964,25 @@
     }
     
     .auth-toast {
-        padding: 10px 12px;
-        font-size: 12px;
+        padding: 14px 16px;
+        font-size: 13px;
+        min-height: 60px;
+    }
+    
+    .auth-toast-icon {
+        font-size: 18px;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .auth-toast-message {
+        font-size: 14px;
+    }
+    
+    .auth-toast-close {
+        font-size: 20px;
+        width: 24px;
+        height: 24px;
     }
     
     .auth-page .illustration-section {
