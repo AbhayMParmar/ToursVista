@@ -1243,7 +1243,7 @@
   z-index: 2;
 }
 
-/* Heart Icon for Saving Tours - No Background */
+/* Heart Icon for Saving Tours - No Background - Enhanced for Mobile */
 .tour-save-heart {
   position: absolute;
   top: 1rem;
@@ -1257,8 +1257,11 @@
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  padding: 0;
+  padding: 8px; /* Increased touch target */
+  margin: -8px; /* Offset padding to maintain position */
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* Improve touch response */
 }
 
 .tour-save-heart:hover {
@@ -1277,6 +1280,7 @@
   stroke: #ffffff;
   stroke-width: 2;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  pointer-events: none; /* Let the button handle clicks */
 }
 
 .tour-save-heart:hover svg {
@@ -1295,6 +1299,7 @@
   align-items: center;
   gap: 0.2rem;
   z-index: 2;
+  pointer-events: none; /* Prevent interference with clicks */
 }
 
 /* Tour category badge - moved to bottom right */
@@ -1303,6 +1308,7 @@
   bottom: 1rem;
   right: 1rem;
   z-index: 2;
+  pointer-events: none; /* Prevent interference with clicks */
 }
 
 .tour-category-badge span {
@@ -1455,6 +1461,149 @@
   color: #666666;
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+/* PROFILE SECTION BUTTONS - Enhanced Styles */
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.btn-profile {
+  background: linear-gradient(135deg, #FF9966, #FFB088);
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 10px rgba(255, 153, 102, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-width: 160px;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.btn-profile::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+  z-index: 1;
+}
+
+.btn-profile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 153, 102, 0.4);
+  background: linear-gradient(135deg, #FF8866, #FFA078);
+}
+
+.btn-profile:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-profile:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(255, 153, 102, 0.3);
+}
+
+.btn-profile-secondary {
+  background: transparent;
+  color: #2E8B57;
+  border: 2px solid #2E8B57;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-width: 160px;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.btn-profile-secondary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(46, 139, 87, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+  z-index: -1;
+}
+
+.btn-profile-secondary:hover {
+  color: white;
+  background: #2E8B57;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(46, 139, 87, 0.3);
+}
+
+.btn-profile-secondary:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-profile-secondary:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(46, 139, 87, 0.2);
+}
+
+.btn-profile-outline {
+  background: transparent;
+  color: #666666;
+  border: 2px solid #FFE5CC;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-width: 160px;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+
+.btn-profile-outline:hover {
+  background: #FFFAF5;
+  color: #FF9966;
+  border-color: #FF9966;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 153, 102, 0.15);
+}
+
+.btn-profile-outline:active {
+  transform: translateY(-1px);
 }
 
 /* Footer */
@@ -2137,7 +2286,7 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
-/* Heart Icon for Tour Detail Page */
+/* Heart Icon for Tour Detail Page - Enhanced for Mobile */
 .tour-detail-save-heart {
   position: absolute;
   top: 2rem;
@@ -2151,8 +2300,11 @@
   justify-content: center;
   cursor: pointer;
   z-index: 20;
-  padding: 0;
+  padding: 10px; /* Increased touch target */
+  margin: -10px; /* Offset padding to maintain position */
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* Improve touch response */
 }
 
 .tour-detail-save-heart:hover {
@@ -2171,6 +2323,7 @@
   stroke: #ffffff;
   stroke-width: 2;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  pointer-events: none; /* Let the button handle clicks */
 }
 
 .tour-detail-save-heart:hover svg {
@@ -2741,6 +2894,8 @@
   .tour-save-heart {
     top: 0.8rem;
     left: 0.8rem;
+    padding: 10px; /* Larger touch target on mobile */
+    margin: -10px;
   }
   
   .tour-save-heart svg {
@@ -2761,11 +2916,21 @@
   .tour-detail-save-heart {
     top: 1.5rem;
     left: 1.5rem;
+    padding: 12px; /* Larger touch target on mobile */
+    margin: -12px;
   }
   
   .tour-detail-save-heart svg {
     width: 28px;
     height: 28px;
+  }
+  
+  .btn-profile,
+  .btn-profile-secondary,
+  .btn-profile-outline {
+    min-width: 140px;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -2782,6 +2947,8 @@
   .tour-save-heart {
     top: 0.6rem;
     left: 0.6rem;
+    padding: 12px; /* Even larger touch target on small mobile */
+    margin: -12px;
   }
   
   .tour-save-heart svg {
@@ -2802,11 +2969,27 @@
   .tour-detail-save-heart {
     top: 1rem;
     left: 1rem;
+    padding: 14px; /* Larger touch target on small mobile */
+    margin: -14px;
   }
   
   .tour-detail-save-heart svg {
     width: 24px;
     height: 24px;
+  }
+  
+  .profile-actions {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .btn-profile,
+  .btn-profile-secondary,
+  .btn-profile-outline {
+    width: 100%;
+    min-width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
   }
 }
 
