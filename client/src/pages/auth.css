@@ -16,10 +16,7 @@
     --shadow-md: 0 4px 8px rgba(255, 153, 102, 0.15);
     --shadow-lg: 0 8px 16px rgba(255, 153, 102, 0.2);
     --shadow-xl: 0 12px 24px rgba(255, 153, 102, 0.25);
-    --shadow-2xl: 0 20px 40px rgba(255, 153, 102, 0.3);
-    --shadow-3xl: 0 25px 50px rgba(255, 153, 102, 0.35);
-    --shadow-inner: inset 0 2px 4px rgba(255, 255, 255, 0.8), inset 0 -2px 4px rgba(255, 153, 102, 0.1);
-    --shadow-glow: 0 0 20px rgba(255, 153, 102, 0.4);
+    --shadow-2xl: 0 16px 32px rgba(255, 153, 102, 0.3);
     --radius: 12px;
 }
 
@@ -65,7 +62,7 @@
     background: white;
     border-radius: 10px;
     padding: 18px 22px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(255, 153, 102, 0.1);
+    box-shadow: var(--shadow-md);
     animation: swipeDown 0.3s ease forwards;
     transform: translateY(-100%);
     opacity: 0;
@@ -206,47 +203,34 @@
     overflow: hidden;
 }
 
-/* ENHANCED: Card Wrapper with Premium Box Shadows */
+/* UPDATED: Card Wrapper with Normal Box Shadows */
 .auth-page .auth-card-wrapper {
     background: var(--card-light);
     border-radius: var(--radius);
-    box-shadow: 
-        0 20px 40px -10px rgba(255, 153, 102, 0.3),
-        0 10px 20px -5px rgba(255, 153, 102, 0.2),
-        0 30px 60px -15px rgba(255, 153, 102, 0.4),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8),
-        inset 0 -1px 2px rgba(255, 153, 102, 0.1);
+    box-shadow: var(--shadow-xl);
     overflow: hidden;
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 1px solid rgba(255, 204, 153, 0.3);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-light);
     backdrop-filter: blur(10px);
-    position: relative;
 }
 
-/* ENHANCED: Hover effect with even more dramatic shadows */
+/* UPDATED: Hover effect with subtle shadow increase */
 .auth-page .auth-card-wrapper:hover {
-    box-shadow: 
-        0 30px 50px -12px rgba(255, 153, 102, 0.4),
-        0 15px 30px -8px rgba(255, 153, 102, 0.3),
-        0 40px 70px -20px rgba(255, 153, 102, 0.5),
-        0 0 0 1px rgba(255, 153, 102, 0.2),
-        inset 0 1px 3px rgba(255, 255, 255, 0.9),
-        inset 0 -2px 3px rgba(255, 153, 102, 0.15);
-    transform: translateY(-8px) scale(1.01);
+    box-shadow: var(--shadow-2xl);
+    transform: translateY(-3px);
 }
 
-/* ENHANCED: Split Card with inner shadow */
+/* Split Card with clean design */
 .auth-page .split-card {
     display: flex;
     min-height: 650px;
     overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5);
 }
 
-/* Form Section Styles with subtle shadows */
+/* Form Section Styles */
 .auth-page .form-section {
     flex: 1;
     display: flex;
@@ -256,9 +240,6 @@
     background: var(--light-color);
     overflow-y: auto;
     border-right: 1px solid var(--border-light);
-    box-shadow: 
-        inset -2px 0 5px rgba(255, 153, 102, 0.05),
-        inset 0 2px 5px rgba(255, 255, 255, 0.8);
 }
 
 .auth-page .auth-form {
@@ -277,7 +258,6 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 2px 2px 4px rgba(255, 153, 102, 0.1);
 }
 
 .auth-page .auth-subtitle {
@@ -286,7 +266,6 @@
     font-size: 16px;
     text-align: center;
     line-height: 1.5;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .auth-page .form-group {
@@ -302,7 +281,6 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .auth-page .form-group input {
@@ -314,27 +292,20 @@
     transition: all 0.3s ease;
     background: #FFFFFF;
     color: var(--text-dark);
-    box-shadow: 
-        0 2px 4px rgba(255, 153, 102, 0.1),
-        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .auth-page .form-group input:focus {
     outline: none;
     border-color: var(--primary-color);
     background: #FFFFFF;
-    box-shadow: 
-        0 0 0 3px rgba(255, 204, 153, 0.2),
-        0 4px 8px rgba(255, 153, 102, 0.15),
-        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
 .auth-page .form-group input:hover {
     border-color: var(--accent-color);
-    box-shadow: 
-        0 4px 8px rgba(255, 153, 102, 0.2),
-        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
 
@@ -342,7 +313,6 @@
     background: #F5F5F5;
     cursor: not-allowed;
     opacity: 0.7;
-    box-shadow: none;
 }
 
 .auth-page .form-hint {
@@ -374,7 +344,7 @@
     background: rgba(255, 204, 153, 0.1);
 }
 
-/* ENHANCED: Primary Button with better shadows */
+/* UPDATED: Primary Button with normal shadows */
 .auth-page .btn-primary {
     width: 100%;
     padding: 16px;
@@ -387,10 +357,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 10px;
-    box-shadow: 
-        0 4px 12px rgba(255, 153, 102, 0.3),
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: var(--shadow-lg);
     position: relative;
     overflow: hidden;
     letter-spacing: 0.5px;
@@ -411,11 +378,8 @@
 
 .auth-page .btn-primary:hover {
     background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-    box-shadow: 
-        0 8px 20px rgba(255, 153, 102, 0.4),
-        0 4px 8px rgba(0, 0, 0, 0.15),
-        inset 0 1px 3px rgba(255, 255, 255, 0.9);
-    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
     color: #333333;
 }
 
@@ -426,9 +390,7 @@
 
 .auth-page .btn-primary:active {
     transform: translateY(-1px);
-    box-shadow: 
-        0 4px 10px rgba(255, 153, 102, 0.3),
-        inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
 }
 
 .auth-page .btn-primary:disabled {
@@ -456,9 +418,6 @@
     color: var(--text-dark);
     position: relative;
     overflow: hidden;
-    box-shadow: 
-        inset 2px 0 5px rgba(255, 255, 255, 0.8),
-        inset 0 2px 5px rgba(255, 255, 255, 0.8);
 }
 
 .auth-page .illustration-section::before {
@@ -501,9 +460,7 @@
     color: var(--text-dark);
     font-size: 32px;
     font-weight: 700;
-    text-shadow: 
-        2px 2px 4px rgba(255, 153, 102, 0.2),
-        0 4px 8px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 2px 4px rgba(255, 153, 102, 0.1);
     background: linear-gradient(135deg, #FF9966, #FFCC99);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -523,9 +480,7 @@
     font-weight: 700;
     line-height: 1.3;
     color: var(--text-dark);
-    text-shadow: 
-        2px 2px 4px rgba(255, 153, 102, 0.1),
-        0 2px 4px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
 }
 
 .auth-page .illustration-content p {
@@ -533,10 +488,9 @@
     color: var(--text-muted);
     line-height: 1.6;
     margin-bottom: 25px;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
-/* ENHANCED: Switch Button with better shadows */
+/* UPDATED: Switch Button with normal shadows */
 .auth-page .btn-switch {
     margin-top: 25px;
     padding: 14px 30px;
@@ -548,41 +502,31 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 
-        0 4px 12px rgba(255, 153, 102, 0.15),
-        0 2px 4px rgba(0, 0, 0, 0.05),
-        inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
 }
 
 .auth-page .btn-switch:hover {
     background: var(--primary-color);
     color: #333333;
-    box-shadow: 
-        0 8px 20px rgba(255, 153, 102, 0.25),
-        0 4px 8px rgba(0, 0, 0, 0.1),
-        inset 0 1px 3px rgba(255, 255, 255, 0.9);
-    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
     border-color: var(--primary-color);
 }
 
 .auth-page .btn-switch:active {
     transform: translateY(-1px);
-    box-shadow: 
-        0 4px 10px rgba(255, 153, 102, 0.2),
-        inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
 }
 
-/* Messages and Alerts - Keep for form validation */
+/* Messages and Alerts */
 .auth-page .alert {
     padding: 14px 18px;
     border-radius: 8px;
     margin-bottom: 20px;
     font-size: 14px;
     animation: authFadeIn 0.3s ease;
-    box-shadow: 
-        0 2px 8px rgba(0, 0, 0, 0.1),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: var(--shadow-sm);
     border: 1px solid transparent;
 }
 
@@ -590,18 +534,12 @@
     background: rgba(255, 107, 107, 0.1);
     color: #FF6B6B;
     border-color: rgba(255, 107, 107, 0.3);
-    box-shadow: 
-        0 2px 8px rgba(255, 107, 107, 0.15),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .auth-page .alert-success {
     background: rgba(81, 207, 102, 0.1);
     color: #51CF66;
     border-color: rgba(81, 207, 102, 0.3);
-    box-shadow: 
-        0 2px 8px rgba(81, 207, 102, 0.15),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .auth-page .auth-link {
@@ -656,7 +594,7 @@
     border-top: 1px solid var(--border-light);
 }
 
-/* ENHANCED: Back Home button with shadows */
+/* UPDATED: Back Home button with normal shadows */
 .auth-page .back-home {
     color: var(--accent-color);
     text-decoration: none;
@@ -669,22 +607,16 @@
     border-radius: 20px;
     background: #FFFFFF;
     font-weight: 500;
-    box-shadow: 
-        0 2px 8px rgba(255, 153, 102, 0.15),
-        0 1px 2px rgba(0, 0, 0, 0.05),
-        inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-light);
 }
 
 .auth-page .back-home:hover {
     color: var(--text-dark);
     background: var(--primary-color);
-    transform: translateX(-8px);
+    transform: translateX(-5px);
     text-decoration: none;
-    box-shadow: 
-        0 6px 16px rgba(255, 153, 102, 0.25),
-        0 3px 6px rgba(0, 0, 0, 0.1),
-        inset 0 1px 3px rgba(255, 255, 255, 0.9);
+    box-shadow: var(--shadow-md);
     border-color: var(--primary-color);
 }
 
@@ -699,7 +631,6 @@
     animation: authSpin 1s ease-in-out infinite;
     margin-right: 10px;
     vertical-align: middle;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes authSpin {
@@ -800,6 +731,7 @@
         padding: 16px 18px;
         font-size: 14px;
         min-height: 65px;
+        box-shadow: var(--shadow-md);
     }
     
     .auth-toast-icon {
@@ -833,7 +765,7 @@
         min-height: 100vh;
     }
     
-    /* ENHANCED: Mobile card wrapper with adjusted shadows */
+    /* Mobile card wrapper with adjusted shadows */
     .auth-page .auth-card-wrapper {
         max-width: 100%;
         border-radius: 0;
@@ -855,7 +787,6 @@
         min-height: 100vh;
         border-radius: 0;
         overflow: visible;
-        box-shadow: none;
     }
     
     /* Illustration Section - Mobile */
@@ -865,9 +796,7 @@
         min-height: auto;
         background: linear-gradient(135deg, #FFCC99 0%, #FF9966 100%);
         border-radius: 0 0 30px 30px;
-        box-shadow: 
-            0 4px 20px rgba(255, 153, 102, 0.2),
-            inset 0 -2px 4px rgba(255, 255, 255, 0.3);
+        box-shadow: var(--shadow-md);
         position: relative;
         overflow: hidden;
         margin-bottom: 20px;
@@ -902,7 +831,6 @@
         color: rgba(255, 255, 255, 0.9);
         line-height: 1.5;
         margin-bottom: 25px;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     
     /* Form Section - Mobile */
@@ -913,19 +841,15 @@
         background: transparent;
         flex: 1;
         min-height: auto;
-        box-shadow: none;
     }
     
-    /* ENHANCED: Mobile form with shadows */
+    /* Mobile form with normal shadows */
     .auth-page .auth-form {
         max-width: 100%;
         background: #FFFFFF;
         padding: 25px;
         border-radius: 20px;
-        box-shadow: 
-            0 10px 30px rgba(255, 153, 102, 0.2),
-            0 5px 15px rgba(0, 0, 0, 0.05),
-            inset 0 1px 3px rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow-lg);
     }
     
     .auth-page .auth-form h2 {
@@ -954,16 +878,12 @@
         font-size: 16px;
         border: 2px solid #FFE5CC;
         border-radius: 10px;
-        box-shadow: 
-            0 2px 6px rgba(255, 153, 102, 0.1),
-            inset 0 1px 3px rgba(0, 0, 0, 0.03);
+        box-shadow: var(--shadow-sm);
     }
     
     .auth-page .form-group input:focus {
         border-color: #FF9966;
-        box-shadow: 
-            0 0 0 3px rgba(255, 153, 102, 0.2),
-            0 4px 8px rgba(255, 153, 102, 0.15);
+        box-shadow: var(--shadow-md);
     }
     
     .auth-page .form-hint {
@@ -979,10 +899,7 @@
         border-radius: 12px;
         margin-top: 10px;
         background: linear-gradient(135deg, #FF9966, #FFCC99);
-        box-shadow: 
-            0 4px 15px rgba(255, 153, 102, 0.3),
-            0 2px 5px rgba(0, 0, 0, 0.1),
-            inset 0 1px 3px rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow-lg);
     }
     
     .auth-page .btn-switch {
@@ -993,9 +910,7 @@
         font-size: 16px;
         font-weight: 600;
         border-radius: 12px;
-        box-shadow: 
-            0 4px 15px rgba(0, 0, 0, 0.1),
-            inset 0 1px 3px rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow-md);
         width: 100%;
         max-width: 280px;
     }
@@ -1014,6 +929,12 @@
         padding: 12px 25px;
         font-size: 14px;
         border-radius: 25px;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .auth-page .back-home:hover {
+        transform: translateX(-5px);
+        box-shadow: var(--shadow-md);
     }
     
     /* Alerts - Mobile */
@@ -1109,7 +1030,7 @@
     
     .auth-page .auth-form {
         padding: 20px 15px;
-        box-shadow: 0 8px 20px rgba(255, 153, 102, 0.15);
+        box-shadow: var(--shadow-md);
     }
     
     .auth-page .auth-form h2 {
@@ -1184,9 +1105,7 @@
     .auth-page .auth-card-wrapper {
         max-height: 95vh;
         border-radius: 20px;
-        box-shadow: 
-            0 20px 40px -10px rgba(255, 153, 102, 0.3),
-            0 10px 20px -5px rgba(255, 153, 102, 0.2);
+        box-shadow: var(--shadow-xl);
     }
     
     .auth-page .split-card {
@@ -1228,12 +1147,9 @@
         padding: 2rem;
     }
     
-    /* ENHANCED: Tablet shadows */
+    /* Tablet shadows */
     .auth-page .auth-card-wrapper {
-        box-shadow: 
-            0 15px 30px -8px rgba(255, 153, 102, 0.25),
-            0 8px 16px -4px rgba(255, 153, 102, 0.15),
-            inset 0 1px 2px rgba(255, 255, 255, 0.8);
+        box-shadow: var(--shadow-xl);
     }
     
     .auth-page .split-card {
