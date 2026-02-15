@@ -1954,12 +1954,6 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                 paymentPolicy: 'Not specified',
                 cancellationPolicy: 'Not specified'
               },
-              importantInfo: tourData.importantInfo || {
-                bookingCutoff: 'Not specified',
-                refundPolicy: 'Not specified',
-                healthAdvisory: 'Not specified',
-                safetyMeasures: 'Not specified'
-              },
               // Ensure arrays exist - CRITICAL for itinerary display
               itinerary: tourData.itinerary || [],
               included: tourData.included || [],
@@ -2011,7 +2005,6 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               overview: cachedTour.overview || {},
               requirements: cachedTour.requirements || {},
               pricing: cachedTour.pricing || {},
-              importantInfo: cachedTour.importantInfo || {},
               itinerary: cachedTour.itinerary || [],
               included: cachedTour.included || [],
               excluded: cachedTour.excluded || [],
@@ -2554,105 +2547,6 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
 
           {/* Services (Included/Excluded) */}
           {renderServices()}
-
-          {/* Requirements & Important Info */}
-          {(tourDetails.requirements || tourDetails.pricing || tourDetails.importantInfo) && (
-            <div className="tour-detail-section">
-              <h3 className="section-title">
-                <span style={{ marginRight: '0.5rem' }}>📋</span>
-                Important Information
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                {/* Requirements */}
-                {tourDetails.requirements && (
-                  <div style={{ 
-                    background: '#FFFAF5', 
-                    padding: '1.5rem', 
-                    borderRadius: '10px',
-                    border: '1px solid #FFE5CC'
-                  }}>
-                    <h4 style={{ color: '#333', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span>🎯</span> Requirements
-                    </h4>
-                    {tourDetails.requirements.physicalLevel && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Physical Level:</strong> {tourDetails.requirements.physicalLevel}
-                      </p>
-                    )}
-                    {tourDetails.requirements.fitnessLevel && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Fitness Level:</strong> {tourDetails.requirements.fitnessLevel}
-                      </p>
-                    )}
-                    {tourDetails.requirements.documents && tourDetails.requirements.documents.length > 0 && (
-                      <div style={{ margin: '0.5rem 0' }}>
-                        <strong style={{ color: '#333', display: 'block', marginBottom: '0.25rem' }}>Required Documents:</strong>
-                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
-                          {tourDetails.requirements.documents.map((doc, index) => (
-                            <li key={index} style={{ marginBottom: '0.25rem' }}>{doc}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {tourDetails.requirements.packingList && tourDetails.requirements.packingList.length > 0 && (
-                      <div style={{ margin: '0.5rem 0' }}>
-                        <strong style={{ color: '#333', display: 'block', marginBottom: '0.25rem' }}>Packing List:</strong>
-                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
-                          {tourDetails.requirements.packingList.map((item, index) => (
-                            <li key={index} style={{ marginBottom: '0.25rem' }}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Pricing & Policies */}
-                {(tourDetails.pricing || tourDetails.importantInfo) && (
-                  <div style={{ 
-                    background: '#FFFAF5', 
-                    padding: '1.5rem', 
-                    borderRadius: '10px',
-                    border: '1px solid #FFE5CC'
-                  }}>
-                    <h4 style={{ color: '#333', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span>💰</span> Policies
-                    </h4>
-                    {tourDetails.pricing?.paymentPolicy && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Payment:</strong> {tourDetails.pricing.paymentPolicy}
-                      </p>
-                    )}
-                    {tourDetails.pricing?.cancellationPolicy && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Cancellation:</strong> {tourDetails.pricing.cancellationPolicy}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.bookingCutoff && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Booking Cutoff:</strong> {tourDetails.importantInfo.bookingCutoff}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.refundPolicy && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Refund:</strong> {tourDetails.importantInfo.refundPolicy}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.healthAdvisory && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Health Advisory:</strong> {tourDetails.importantInfo.healthAdvisory}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.safetyMeasures && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Safety Measures:</strong> {tourDetails.importantInfo.safetyMeasures}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Customer Reviews */}
           {renderRatingsSection()}
