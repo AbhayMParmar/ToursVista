@@ -19,9 +19,6 @@ const Toast = ({ message, type, onClose }) => {
         {type === 'success' ? '✓' : '✕'}
       </div>
       <div className="auth-toast-content">
-        <div className="auth-toast-title">
-          {type === 'success' ? 'Success!' : 'Error!'}
-        </div>
         <div className="auth-toast-message">{message}</div>
       </div>
       <button className="auth-toast-close" onClick={onClose}>×</button>
@@ -227,7 +224,7 @@ const Login = () => {
 
   return (
     <div className="auth-page">
-      {/* UPDATED: Toast Container at Top Center */}
+      {/* UPDATED: Toast Container at Top Center with Swipe Down Animation */}
       <div className="auth-toast-container">
         {toasts.map(toast => (
           <Toast
