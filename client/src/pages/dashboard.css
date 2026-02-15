@@ -930,13 +930,13 @@
   box-shadow: 0 6px 12px rgba(46, 139, 87, 0.3);
 }
 
-/* Unique Rate Button Design */
+/* Advanced Unique Rate Button Design - Premium UI */
 .btn-rate-unique {
-  background: linear-gradient(135deg, #FF9966, #FFB088);
-  color: white;
+  background: transparent;
+  color: #FF9966;
   padding: 0.8rem 1.8rem;
-  border: none;
-  border-radius: 25px;
+  border: 2px solid #FF9966;
+  border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -947,54 +947,58 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(255, 153, 102, 0.3);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 6px rgba(255, 153, 102, 0.1);
 }
 
 .btn-rate-unique::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 153, 102, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+  z-index: -1;
 }
 
 .btn-rate-unique:hover {
+  color: white;
+  border-color: #FF9966;
+  background: #FF9966;
   transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(255, 153, 102, 0.4);
-  background: linear-gradient(135deg, #FF8866, #FFA078);
+  box-shadow: 0 8px 20px rgba(255, 153, 102, 0.3);
 }
 
 .btn-rate-unique:hover::before {
-  left: 100%;
+  width: 300px;
+  height: 300px;
 }
 
 .btn-rate-unique:active {
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(255, 153, 102, 0.3);
+  box-shadow: 0 5px 15px rgba(255, 153, 102, 0.2);
 }
 
 .btn-rate-unique .rate-star {
   font-size: 1.2rem;
-  animation: starPulse 2s infinite;
+  transition: transform 0.3s ease;
+}
+
+.btn-rate-unique:hover .rate-star {
+  transform: rotate(360deg) scale(1.1);
 }
 
 .btn-rate-unique .rate-text {
-  letter-spacing: 0.5px;
-}
-
-@keyframes starPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
+  position: relative;
+  z-index: 1;
 }
 
 /* SAVED TOURS SECTION */
@@ -1293,12 +1297,24 @@
   z-index: 2;
 }
 
-/* Tour category badge */
+/* Tour category badge - moved to bottom right */
 .tour-category-badge {
   position: absolute;
-  top: 1rem;
-  right: 5rem;
+  bottom: 1rem;
+  right: 1rem;
   z-index: 2;
+}
+
+.tour-category-badge span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(46, 139, 87, 0.9);
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  letter-spacing: 0.3px;
 }
 
 .tour-content {
@@ -2674,9 +2690,8 @@
 /* Mobile Responsive for Rate Button and Heart Icon */
 @media (max-width: 768px) {
   .btn-rate-unique {
-    padding: 0.7rem 1.5rem;
+    padding: 0.7rem 1.2rem;
     font-size: 0.95rem;
-    border-radius: 20px;
   }
   
   .btn-rate-unique .rate-star {
@@ -2694,15 +2709,20 @@
   }
   
   .tour-category-badge {
-    right: 4rem;
+    bottom: 0.8rem;
+    right: 0.8rem;
+  }
+  
+  .tour-category-badge span {
+    font-size: 0.65rem;
+    padding: 3px 8px;
   }
 }
 
 @media (max-width: 480px) {
   .btn-rate-unique {
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1rem;
     font-size: 0.9rem;
-    border-radius: 18px;
   }
   
   .btn-rate-unique .rate-star {
@@ -2720,12 +2740,13 @@
   }
   
   .tour-category-badge {
-    right: 3.5rem;
+    bottom: 0.6rem;
+    right: 0.6rem;
   }
   
   .tour-category-badge span {
-    font-size: 0.65rem !important;
-    padding: 2px 6px !important;
+    font-size: 0.6rem;
+    padding: 2px 6px;
   }
 }
 
