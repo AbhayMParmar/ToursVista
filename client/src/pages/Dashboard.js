@@ -317,7 +317,30 @@ const updateBookingStatus = async (bookingId, status) => {
   }
 };
 
-// Toast Notification Component
+// UPDATED Toast Notification Component - Matching Login/Register
+const DashboardToast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`dashboard-toast ${type}`}>
+      <div className="dashboard-toast-icon">
+        {type === 'success' ? '✓' : '✕'}
+      </div>
+      <div className="dashboard-toast-content">
+        <div className="dashboard-toast-message">{message}</div>
+      </div>
+      <button className="dashboard-toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+};
+
+// Toast Notification Component (Legacy - Keep for compatibility)
 const ToastNotification = ({ message, type = 'success', onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -2855,7 +2878,7 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour, onView
   );
 };
 
-// Main Dashboard Component - UPDATED with enhanced data fetching
+// Main Dashboard Component - UPDATED with enhanced data fetching and toast notifications
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2870,6 +2893,8 @@ const Dashboard = () => {
   const [toastType, setToastType] = useState('success');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('online');
+  // New state for dashboard toast notifications
+  const [dashboardToasts, setDashboardToasts] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -2877,12 +2902,12 @@ const Dashboard = () => {
   useEffect(() => {
     const handleOnline = () => {
       setConnectionStatus('online');
-      showNotification('Back online!', 'success');
+      addDashboardToast('Back online!', 'success');
     };
 
     const handleOffline = () => {
       setConnectionStatus('offline');
-      showNotification('You are offline. Some features may be limited.', 'error');
+      addDashboardToast('You are offline. Some features may be limited.', 'error');
     };
 
     window.addEventListener('online', handleOnline);
@@ -2896,6 +2921,16 @@ const Dashboard = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Toast notification functions
+  const addDashboardToast = (message, type) => {
+    const id = Date.now();
+    setDashboardToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeDashboardToast = (id) => {
+    setDashboardToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   const showNotification = (message, type = 'success') => {
     setToastMessage(message);
@@ -2987,7 +3022,7 @@ const Dashboard = () => {
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          showNotification('Using cached profile data', 'warning');
+          addDashboardToast('Using cached profile data', 'error');
           
           // Load cached tours
           await loadToursWithDetails();
@@ -3000,7 +3035,7 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      showNotification('Error loading dashboard. Please refresh.', 'error');
+      addDashboardToast('Error loading dashboard. Please refresh.', 'error');
     } finally {
       setLoading(false);
     }
@@ -3039,7 +3074,7 @@ const Dashboard = () => {
 
   const handleRateTour = (tour) => {
     if (!user) {
-      showNotification('Please login to rate tours', 'error');
+      addDashboardToast('Please login to rate tours', 'error');
       return;
     }
     setSelectedTour(tour);
@@ -3058,7 +3093,7 @@ const Dashboard = () => {
     
     setShowBookingModal(false);
     setSelectedTour(null);
-    showNotification(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`);
+    addDashboardToast(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`, 'success');
   };
 
   const handleSubmitRating = (ratingData) => {
@@ -3076,7 +3111,7 @@ const Dashboard = () => {
     
     setShowRatingModal(false);
     setSelectedTour(null);
-    showNotification('Thank you for your rating!', 'success');
+    addDashboardToast('Thank you for your rating!', 'success');
   };
 
   const handleCancelBooking = (bookingId) => {
@@ -3088,12 +3123,12 @@ const Dashboard = () => {
       )
     );
     
-    showNotification('Booking cancelled successfully!', 'success');
+    addDashboardToast('Booking cancelled successfully!', 'success');
   };
 
   const handleSaveTour = async (tourId) => {
     if (!user) {
-      showNotification('Please login to save tours', 'error');
+      addDashboardToast('Please login to save tours', 'error');
       return;
     }
     
@@ -3106,7 +3141,7 @@ const Dashboard = () => {
         
         // Update local state
         setSavedTours(prev => prev.filter(tour => tour._id !== tourId));
-        showNotification('Tour removed from saved list!', 'success');
+        addDashboardToast('Tour removed from saved list!', 'success');
       } else {
         // Add to saved in database
         await saveTourToDB(user._id, tourId);
@@ -3115,18 +3150,18 @@ const Dashboard = () => {
         const tourToSave = tours.find(t => t._id === tourId);
         if (tourToSave) {
           setSavedTours(prev => [...prev, tourToSave]);
-          showNotification('Tour saved successfully!', 'success');
+          addDashboardToast('Tour saved successfully!', 'success');
         }
       }
     } catch (error) {
       console.error('Error saving/removing tour:', error);
-      showNotification('Error updating saved tours. Please try again.', 'error');
+      addDashboardToast('Error updating saved tours. Please try again.', 'error');
     }
   };
 
   const handleEditProfile = (updatedUser) => {
     setUser(updatedUser);
-    showNotification('Profile updated successfully!', 'success');
+    addDashboardToast('Profile updated successfully!', 'success');
   };
 
   const handleLogout = () => {
@@ -3203,6 +3238,18 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* UPDATED: Dashboard Toast Container at Top Center */}
+      <div className="dashboard-toast-container">
+        {dashboardToasts.map(toast => (
+          <DashboardToast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeDashboardToast(toast.id)}
+          />
+        ))}
+      </div>
+
       {/* FIXED NAVBAR WITH HAMBURGER MENU */}
       <nav className="dashboard-navbar">
         <div className="navbar-brand">
@@ -3514,7 +3561,7 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Toast Notification */}
+      {/* Toast Notification (Legacy) */}
       {showToast && (
         <ToastNotification
           message={toastMessage}
