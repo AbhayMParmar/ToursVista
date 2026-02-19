@@ -1,6 +1,9 @@
 # 🏝️ TourVista - Travel & Tourism Platform
  TourVista is a full-stack travel and tourism web application that enables users to discover, explore, and book amazing tour packages. Built with the MERN stack, it provides a seamless booking experience with secure authentication, advanced filtering, and comprehensive admin controls.
 
+## 🌐 Live Preview
+https://tours-vista.vercel.app/
+
 
 # 🚀 Features
 Technologies: React.js, Node.js, Express.js, MongoDB, JWT, Tailwind CSS, REST APIs
@@ -30,6 +33,3 @@ Built responsive, mobile-first UI ensuring seamless experience across devices
 Optimized database queries for faster load times and efficient data retrieval
 
 Integrated RESTful APIs for smooth frontend-backend communication
-
-## 🌐 Live Preview
-https://tours-vista.vercel.app/
