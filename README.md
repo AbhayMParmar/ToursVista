@@ -6,25 +6,25 @@ https://tours-vista.vercel.app/
 
 
 # 🚀 Features
-Technologies: React.js, Node.js, Express.js, MongoDB, JWT, Tailwind CSS, REST APIs
+-Technologies: React.js, Node.js, Express.js, MongoDB, JWT, Tailwind CSS, REST APIs
 
-Key Features & Functionalities:
+-Key Features & Functionalities:
 
-User Authentication: Secure JWT-based login/registration with role-based access (admin/tourist)
+-User Authentication: Secure JWT-based login/registration with role-based access (admin/tourist)
 
-Tour Package Management: CRUD operations for tour packages with details like itinerary, pricing, inclusions/exclusions
+-Tour Package Management: CRUD operations for tour packages with details like itinerary, pricing, inclusions/exclusions
 
-Search & Filter: Advanced filtering by destination, price range, duration, and activities
+-Search & Filter: Advanced filtering by destination, price range, duration, and activities
 
-Booking System: Online booking functionality with availability tracking and booking history
+-Booking System: Online booking functionality with availability tracking and booking history
 
-Interactive UI: Responsive design with image galleries, tour highlights, and user reviews/ratings
+-Interactive UI: Responsive design with image galleries, tour highlights, and user reviews/ratings
 
-Admin Dashboard: Comprehensive dashboard for managing tours, bookings, users, and viewing analytics
+-Admin Dashboard: Comprehensive dashboard for managing tours, bookings, users, and viewing analytics
 
-Wishlist: Users can save favorite tours for later booking
+-Wishlist: Users can save favorite tours for later booking
 
-Achievements/Highlights:
+-Achievements/Highlights:
 
 Implemented secure authentication and authorization system
 
