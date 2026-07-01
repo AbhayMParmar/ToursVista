@@ -7,7 +7,7 @@ import './dashboard.css';
 const API_URL = process.env.REACT_APP_API_URL || 'https://toursvista.onrender.com/api';
 
 // Constants for timeout and retry
-const API_TIMEOUT = 15000; // 15 seconds timeout
+const API_TIMEOUT = 30000; // 30 seconds timeout
 const MAX_RETRIES = 2; // Maximum retry attempts
 const RETRY_DELAY = 1000; // 1 second delay between retries
 
@@ -201,6 +201,13 @@ const getTours = async () => {
           overviewHighlights: tours[0].overview?.highlights?.length || 0,
           hasItinerary: !!tours[0].itinerary,
           itineraryLength: tours[0].itinerary?.length || 0,
+          itineraryDays: tours[0].itinerary?.map(day => ({
+            day: day.day,
+            title: day.title,
+            activitiesCount: day.activities?.length || 0,
+            hasMeals: !!day.meals,
+            hasAccommodation: !!day.accommodation
+          })),
           hasIncluded: !!tours[0].included,
           includedLength: tours[0].included?.length || 0,
           hasExcluded: !!tours[0].excluded,
@@ -317,7 +324,30 @@ const updateBookingStatus = async (bookingId, status) => {
   }
 };
 
-// Toast Notification Component
+// UPDATED Toast Notification Component - Matching Login/Register
+const DashboardToast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`dashboard-toast ${type}`}>
+      <div className="dashboard-toast-icon">
+        {type === 'success' ? '✓' : '✕'}
+      </div>
+      <div className="dashboard-toast-content">
+        <div className="dashboard-toast-message">{message}</div>
+      </div>
+      <button className="dashboard-toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+};
+
+// Toast Notification Component (Legacy - Keep for compatibility)
 const ToastNotification = ({ message, type = 'success', onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1127,20 +1157,21 @@ const BookingModal = ({ tour, user, onClose, onConfirm }) => {
   );
 };
 
-// Tour Card Component - ENHANCED to show admin-added details
+// Tour Card Component - UPDATED with Heart Icon (No Background) and Fixed Rate Button
 const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isHeartHovered, setIsHeartHovered] = useState(false);
 
   const handleSaveClick = (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Stop event from bubbling up to parent
     onSave(tour._id);
   };
 
   const handleRateClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    onRate(tour);
+    onRate(tour); // This opens the rating modal without navigation
   };
 
   const handleBookClick = (e) => {
@@ -1150,9 +1181,10 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
   };
 
   const handleCardClick = (e) => {
-    // Don't trigger if clicking on action buttons or links
+    // Don't trigger if clicking on action buttons or the heart icon
     if (e.target.closest('.btn-book-now') || 
-        e.target.closest('.btn-save') || 
+        e.target.closest('.tour-save-heart') || 
+        e.target.closest('.btn-rate-unique') ||
         e.target.closest('.tour-price')) {
       return;
     }
@@ -1180,9 +1212,9 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
       style={{ 
         cursor: 'pointer',
         position: 'relative',
-        transform: isHovered ? 'translateY(-10px)' : 'translateY(0)',
+        transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-        boxShadow: isHovered ? '0 10px 30px rgba(0,0,0,0.15)' : '0 4px 15px rgba(0,0,0,0.1)'
+        boxShadow: isHovered ? '0 8px 25px rgba(0,0,0,0.12)' : '0 4px 15px rgba(0,0,0,0.1)'
       }}
     >
       <div className="tour-image">
@@ -1194,6 +1226,33 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
           }}
         />
         <div className="tour-price">₹{tour.price?.toLocaleString('en-IN')}</div>
+        
+        {/* Heart Icon - No Background, Just the Heart */}
+        <button 
+          className={`tour-save-heart ${isSaved ? 'saved' : ''}`}
+          onClick={handleSaveClick}
+          onMouseEnter={() => setIsHeartHovered(true)}
+          onMouseLeave={() => setIsHeartHovered(false)}
+          aria-label={isSaved ? 'Remove from saved' : 'Save tour'}
+        >
+          <svg 
+            width="28" 
+            height="28" 
+            viewBox="0 0 24 24" 
+            fill={isSaved ? "#FF4444" : "none"} 
+            stroke={isSaved ? "#FF4444" : (isHeartHovered ? "#FF4444" : "#ffffff")}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              filter: isHeartHovered ? 'drop-shadow(0 2px 4px rgba(255, 68, 68, 0.4))' : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+        
         {/* Rating badge on image */}
         <div className="tour-rating-badge">
           <span style={{ fontSize: '1rem', color: '#FF9966' }}>★</span>
@@ -1214,16 +1273,10 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
             ({tour.totalRatings || 0})
           </span>
         </div>
-        {/* Tour category badge */}
+        
+        {/* Tour category badge - moved to bottom right */}
         <div className="tour-category-badge">
-          <span style={{ 
-            fontSize: '0.7rem',
-            fontWeight: '600',
-            color: 'white',
-            background: 'rgba(46, 139, 87, 0.8)',
-            padding: '2px 8px',
-            borderRadius: '10px'
-          }}>
+          <span>
             {tour.category}
           </span>
         </div>
@@ -1295,20 +1348,15 @@ const TourCard = ({ tour, onBook, isSaved, onSave, onRate, onViewDetails }) => {
         
         <div className="tour-booking-actions">
           <button className="btn-book-now" onClick={handleBookClick}>
-            <span style={{ marginRight: '0.25rem' }}>✈️</span> Book Now
+             Book Now
           </button>
+          {/* Advanced Unique Rate Button Design */}
           <button 
-            className={`btn-save ${isSaved ? 'saved' : ''}`} 
-            onClick={handleSaveClick}
-          >
-            {isSaved ? '✓ Saved' : '💾 Save'}
-          </button>
-          <button 
-            className="btn-save" 
+            className="btn-rate-unique" 
             onClick={handleRateClick}
-            style={{ background: '#FFFAF5', color: '#FF9966', borderColor: '#FF9966' }}
           >
-            ⭐ Rate
+            <span className="rate-star">⭐</span>
+            <span className="rate-text">Rate</span>
           </button>
         </div>
       </div>
@@ -1861,7 +1909,7 @@ const ProfilePage = ({ user, userBookings, savedTours, onEditProfile }) => {
   );
 };
 
-// Tour Detail Page Component - COMPLETELY REWRITTEN to properly display all admin-added data
+// Tour Detail Page Component - UPDATED with Heart Icon on Image
 const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour }) => {
   const location = useLocation();
   const tourId = location.pathname.split('/').pop();
@@ -1872,6 +1920,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
   const [loading, setLoading] = useState(false);
   const [tourDetails, setTourDetails] = useState(null);
   const [error, setError] = useState(null);
+  const [isHeartHovered, setIsHeartHovered] = useState(false);
 
   // Fetch complete tour details including all admin-added data
   useEffect(() => {
@@ -1886,6 +1935,19 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           if (response.data.success) {
             const tourData = response.data.data;
             console.log('✅ Tour details loaded successfully');
+            
+            // Log itinerary for debugging
+            console.log('📋 Itinerary data from API:', {
+              hasItinerary: !!tourData.itinerary,
+              itineraryLength: tourData.itinerary?.length || 0,
+              itineraryDays: tourData.itinerary?.map(day => ({
+                day: day.day,
+                title: day.title,
+                activitiesCount: day.activities?.length || 0,
+                hasMeals: !!day.meals,
+                hasAccommodation: !!day.accommodation
+              }))
+            });
             
             // Ensure all admin-added data is properly structured
             const formattedTour = {
@@ -1911,13 +1973,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
                 paymentPolicy: 'Not specified',
                 cancellationPolicy: 'Not specified'
               },
-              importantInfo: tourData.importantInfo || {
-                bookingCutoff: 'Not specified',
-                refundPolicy: 'Not specified',
-                healthAdvisory: 'Not specified',
-                safetyMeasures: 'Not specified'
-              },
-              // Ensure arrays exist
+              // Ensure arrays exist - CRITICAL for itinerary display
               itinerary: tourData.itinerary || [],
               included: tourData.included || [],
               excluded: tourData.excluded || [],
@@ -1935,6 +1991,13 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               maxParticipants: tourData.maxParticipants || 20,
               currentParticipants: tourData.currentParticipants || 0
             };
+            
+            console.log('📦 Formatted tour with itinerary:', {
+              hasItinerary: !!formattedTour.itinerary,
+              itineraryLength: formattedTour.itinerary.length,
+              firstDay: formattedTour.itinerary[0] || null
+            });
+            
             setTourDetails(formattedTour);
             
             // Fetch ratings
@@ -1961,7 +2024,6 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               overview: cachedTour.overview || {},
               requirements: cachedTour.requirements || {},
               pricing: cachedTour.pricing || {},
-              importantInfo: cachedTour.importantInfo || {},
               itinerary: cachedTour.itinerary || [],
               included: cachedTour.included || [],
               excluded: cachedTour.excluded || [],
@@ -1977,6 +2039,14 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
     
     fetchTourDetails();
   }, [tourId, tours]);
+
+  const handleSaveClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (tourDetails) {
+      onSaveTour(tourDetails._id);
+    }
+  };
 
   if (loading) {
     return (
@@ -2012,7 +2082,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
     );
   }
 
-  // Function to render itinerary
+  // Function to render itinerary - CRITICAL for displaying day-wise details from admin
   const renderItinerary = () => {
     if (!tourDetails.itinerary || tourDetails.itinerary.length === 0) {
       return (
@@ -2024,7 +2094,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           color: '#666'
         }}>
           <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📅</div>
-          <p>No itinerary details available for this tour.</p>
+          <p>No itinerary details available for this tour. Check back later!</p>
         </div>
       );
     }
@@ -2037,7 +2107,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
         </div>
         
         {day.description && (
-          <p style={{ color: '#666', marginBottom: '1rem' }}>{day.description}</p>
+          <p style={{ color: '#666', marginBottom: '1rem', lineHeight: '1.6' }}>{day.description}</p>
         )}
         
         {day.activities && day.activities.length > 0 && (
@@ -2062,18 +2132,18 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
             marginTop: '1rem',
             paddingTop: '1rem',
             borderTop: '1px solid #FFE5CC',
-            fontSize: '0.9rem',
+            fontSize: '0.95rem',
             color: '#666'
           }}>
             {day.meals && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1rem' }}>🍽️</span>
+                <span style={{ fontSize: '1.1rem' }}>🍽️</span>
                 <span><strong>Meals:</strong> {day.meals}</span>
               </div>
             )}
             {day.accommodation && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1rem' }}>🏨</span>
+                <span style={{ fontSize: '1.1rem' }}>🏨</span>
                 <span><strong>Accommodation:</strong> {day.accommodation}</span>
               </div>
             )}
@@ -2374,6 +2444,33 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               e.target.src = 'https://via.placeholder.com/800x400?text=Tour+Image';
             }}
           />
+          
+          {/* Heart Icon on Detail Page Image - Top Left */}
+          <button 
+            className={`tour-detail-save-heart ${isSaved ? 'saved' : ''}`}
+            onClick={handleSaveClick}
+            onMouseEnter={() => setIsHeartHovered(true)}
+            onMouseLeave={() => setIsHeartHovered(false)}
+            aria-label={isSaved ? 'Remove from saved' : 'Save tour'}
+          >
+            <svg 
+              width="32" 
+              height="32" 
+              viewBox="0 0 24 24" 
+              fill={isSaved ? "#FF4444" : "none"} 
+              stroke={isSaved ? "#FF4444" : (isHeartHovered ? "#FF4444" : "#ffffff")}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                filter: isHeartHovered ? 'drop-shadow(0 2px 6px rgba(255, 68, 68, 0.5))' : 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4))',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+          
           <div className="tour-detail-overlay">
             <h2 className="tour-detail-title">{tourDetails.title}</h2>
             <p className="tour-detail-subtitle">{tourDetails.description}</p>
@@ -2472,131 +2569,38 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
           {/* Tour Overview Details */}
           {renderOverviewDetails()}
 
-          {/* Services (Included/Excluded) */}
-          {renderServices()}
-
-          {/* Itinerary */}
+          {/* Itinerary - CRITICAL section for displaying day-wise details from admin */}
           <div className="tour-detail-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 className="section-title">
                 <span style={{ marginRight: '0.5rem' }}>📅</span>
-                Itinerary
+                Detailed Itinerary
               </h3>
               {tourDetails.itinerary && tourDetails.itinerary.length > 0 && (
                 <span style={{ 
-                  fontSize: '0.9rem', 
-                  color: '#666',
-                  background: '#FFFAF5',
+                  fontSize: '0.95rem', 
+                  color: '#2E8B57',
+                  background: '#f0f9f4',
                   padding: '0.25rem 0.75rem',
-                  borderRadius: '12px'
+                  borderRadius: '20px',
+                  fontWeight: '600'
                 }}>
-                  {tourDetails.itinerary.length} days
+                  {tourDetails.itinerary.length} Days
                 </span>
               )}
             </div>
+            
+            <p style={{ color: '#666', marginBottom: '1.5rem', fontStyle: 'italic' }}>
+              Here's a day-by-day breakdown of your {tourDetails.title} experience:
+            </p>
+            
             <div className="tour-itinerary">
               {renderItinerary()}
             </div>
           </div>
 
-          {/* Requirements & Important Info */}
-          {(tourDetails.requirements || tourDetails.pricing || tourDetails.importantInfo) && (
-            <div className="tour-detail-section">
-              <h3 className="section-title">
-                <span style={{ marginRight: '0.5rem' }}>📋</span>
-                Important Information
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                {/* Requirements */}
-                {tourDetails.requirements && (
-                  <div style={{ 
-                    background: '#FFFAF5', 
-                    padding: '1.5rem', 
-                    borderRadius: '10px',
-                    border: '1px solid #FFE5CC'
-                  }}>
-                    <h4 style={{ color: '#333', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span>🎯</span> Requirements
-                    </h4>
-                    {tourDetails.requirements.physicalLevel && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Physical Level:</strong> {tourDetails.requirements.physicalLevel}
-                      </p>
-                    )}
-                    {tourDetails.requirements.fitnessLevel && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Fitness Level:</strong> {tourDetails.requirements.fitnessLevel}
-                      </p>
-                    )}
-                    {tourDetails.requirements.documents && tourDetails.requirements.documents.length > 0 && (
-                      <div style={{ margin: '0.5rem 0' }}>
-                        <strong style={{ color: '#333', display: 'block', marginBottom: '0.25rem' }}>Required Documents:</strong>
-                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
-                          {tourDetails.requirements.documents.map((doc, index) => (
-                            <li key={index} style={{ marginBottom: '0.25rem' }}>{doc}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {tourDetails.requirements.packingList && tourDetails.requirements.packingList.length > 0 && (
-                      <div style={{ margin: '0.5rem 0' }}>
-                        <strong style={{ color: '#333', display: 'block', marginBottom: '0.25rem' }}>Packing List:</strong>
-                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#666' }}>
-                          {tourDetails.requirements.packingList.map((item, index) => (
-                            <li key={index} style={{ marginBottom: '0.25rem' }}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Pricing & Policies */}
-                {(tourDetails.pricing || tourDetails.importantInfo) && (
-                  <div style={{ 
-                    background: '#FFFAF5', 
-                    padding: '1.5rem', 
-                    borderRadius: '10px',
-                    border: '1px solid #FFE5CC'
-                  }}>
-                    <h4 style={{ color: '#333', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span>💰</span> Policies
-                    </h4>
-                    {tourDetails.pricing?.paymentPolicy && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Payment:</strong> {tourDetails.pricing.paymentPolicy}
-                      </p>
-                    )}
-                    {tourDetails.pricing?.cancellationPolicy && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Cancellation:</strong> {tourDetails.pricing.cancellationPolicy}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.bookingCutoff && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Booking Cutoff:</strong> {tourDetails.importantInfo.bookingCutoff}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.refundPolicy && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Refund:</strong> {tourDetails.importantInfo.refundPolicy}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.healthAdvisory && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Health Advisory:</strong> {tourDetails.importantInfo.healthAdvisory}
-                      </p>
-                    )}
-                    {tourDetails.importantInfo?.safetyMeasures && (
-                      <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                        <strong style={{ color: '#333' }}>Safety Measures:</strong> {tourDetails.importantInfo.safetyMeasures}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Services (Included/Excluded) */}
+          {renderServices()}
 
           {/* Customer Reviews */}
           {renderRatingsSection()}
@@ -2625,6 +2629,11 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                 <span style={{ color: '#666' }}>Duration:</span>
                 <span style={{ fontWeight: '600', color: '#333' }}>{tourDetails.duration}</span>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ color: '#666' }}>Itinerary Days:</span>
+                <span style={{ fontWeight: '600', color: '#333' }}>{tourDetails.itinerary?.length || 0} days</span>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -2723,7 +2732,7 @@ const TourDetailPage = ({ tours, savedTours, onBookTour, onSaveTour, onRateTour 
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Keep the 💾 Save for Later button as is */}
       <div className="tour-detail-actions">
         <button 
           className="btn-book-tour"
@@ -2823,7 +2832,7 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour, onView
         <div className="saved-tours-empty">
           <div className="saved-tours-empty-icon">💾</div>
           <h3 style={{ color: '#333', marginBottom: '1rem' }}>No Saved Tours</h3>
-          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Save tours you're interested in by clicking the Save button on any tour.</p>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>Save tours you're interested in by clicking the heart icon on any tour card.</p>
           <Link to="/dashboard/tours" className="btn-details">Browse Tours</Link>
         </div>
         <Link to="/dashboard" className="btn-back" style={{ marginTop: '2rem' }}>← Back to Dashboard</Link>
@@ -2855,7 +2864,7 @@ const SavedToursPage = ({ savedTours, onBookTour, onSaveTour, onRateTour, onView
   );
 };
 
-// Main Dashboard Component - UPDATED with enhanced data fetching
+// Main Dashboard Component - UPDATED with enhanced data fetching and toast notifications
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2870,6 +2879,8 @@ const Dashboard = () => {
   const [toastType, setToastType] = useState('success');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('online');
+  // New state for dashboard toast notifications
+  const [dashboardToasts, setDashboardToasts] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -2877,12 +2888,12 @@ const Dashboard = () => {
   useEffect(() => {
     const handleOnline = () => {
       setConnectionStatus('online');
-      showNotification('Back online!', 'success');
+      addDashboardToast('Back online!', 'success');
     };
 
     const handleOffline = () => {
       setConnectionStatus('offline');
-      showNotification('You are offline. Some features may be limited.', 'error');
+      addDashboardToast('You are offline. Some features may be limited.', 'error');
     };
 
     window.addEventListener('online', handleOnline);
@@ -2897,6 +2908,16 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Toast notification functions
+  const addDashboardToast = (message, type) => {
+    const id = Date.now();
+    setDashboardToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeDashboardToast = (id) => {
+    setDashboardToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
   const showNotification = (message, type = 'success') => {
     setToastMessage(message);
     setToastType(type);
@@ -2908,6 +2929,14 @@ const Dashboard = () => {
     try {
       const allTours = await getTours();
       console.log('📊 Loaded tours with complete data:', allTours.length);
+      
+      // Log tours with itinerary for debugging
+      allTours.forEach((tour, index) => {
+        console.log(`Tour ${index + 1} "${tour.title}" has itinerary:`, {
+          hasItinerary: !!tour.itinerary,
+          itineraryLength: tour.itinerary?.length || 0
+        });
+      });
       
       // Cache tours for offline use
       localStorage.setItem('cachedTours', JSON.stringify(allTours));
@@ -2987,7 +3016,7 @@ const Dashboard = () => {
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          showNotification('Using cached profile data', 'warning');
+          addDashboardToast('Using cached profile data', 'error');
           
           // Load cached tours
           await loadToursWithDetails();
@@ -3000,7 +3029,7 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      showNotification('Error loading dashboard. Please refresh.', 'error');
+      addDashboardToast('Error loading dashboard. Please refresh.', 'error');
     } finally {
       setLoading(false);
     }
@@ -3039,7 +3068,7 @@ const Dashboard = () => {
 
   const handleRateTour = (tour) => {
     if (!user) {
-      showNotification('Please login to rate tours', 'error');
+      addDashboardToast('Please login to rate tours', 'error');
       return;
     }
     setSelectedTour(tour);
@@ -3058,7 +3087,7 @@ const Dashboard = () => {
     
     setShowBookingModal(false);
     setSelectedTour(null);
-    showNotification(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`);
+    addDashboardToast(`Booking confirmed for ${booking.tourTitle}! Total: ₹${(booking.totalPrice || booking.totalAmount).toLocaleString('en-IN')}`, 'success');
   };
 
   const handleSubmitRating = (ratingData) => {
@@ -3076,7 +3105,7 @@ const Dashboard = () => {
     
     setShowRatingModal(false);
     setSelectedTour(null);
-    showNotification('Thank you for your rating!', 'success');
+    addDashboardToast('Thank you for your rating!', 'success');
   };
 
   const handleCancelBooking = (bookingId) => {
@@ -3088,12 +3117,12 @@ const Dashboard = () => {
       )
     );
     
-    showNotification('Booking cancelled successfully!', 'success');
+    addDashboardToast('Booking cancelled successfully!', 'success');
   };
 
   const handleSaveTour = async (tourId) => {
     if (!user) {
-      showNotification('Please login to save tours', 'error');
+      addDashboardToast('Please login to save tours', 'error');
       return;
     }
     
@@ -3106,7 +3135,7 @@ const Dashboard = () => {
         
         // Update local state
         setSavedTours(prev => prev.filter(tour => tour._id !== tourId));
-        showNotification('Tour removed from saved list!', 'success');
+        addDashboardToast('Tour removed from saved list!', 'success');
       } else {
         // Add to saved in database
         await saveTourToDB(user._id, tourId);
@@ -3115,18 +3144,18 @@ const Dashboard = () => {
         const tourToSave = tours.find(t => t._id === tourId);
         if (tourToSave) {
           setSavedTours(prev => [...prev, tourToSave]);
-          showNotification('Tour saved successfully!', 'success');
+          addDashboardToast('Tour saved successfully!', 'success');
         }
       }
     } catch (error) {
       console.error('Error saving/removing tour:', error);
-      showNotification('Error updating saved tours. Please try again.', 'error');
+      addDashboardToast('Error updating saved tours. Please try again.', 'error');
     }
   };
 
   const handleEditProfile = (updatedUser) => {
     setUser(updatedUser);
-    showNotification('Profile updated successfully!', 'success');
+    addDashboardToast('Profile updated successfully!', 'success');
   };
 
   const handleLogout = () => {
@@ -3203,6 +3232,18 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* UPDATED: Dashboard Toast Container at Top Center */}
+      <div className="dashboard-toast-container">
+        {dashboardToasts.map(toast => (
+          <DashboardToast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeDashboardToast(toast.id)}
+          />
+        ))}
+      </div>
+
       {/* FIXED NAVBAR WITH HAMBURGER MENU */}
       <nav className="dashboard-navbar">
         <div className="navbar-brand">
@@ -3514,7 +3555,7 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Toast Notification */}
+      {/* Toast Notification (Legacy) */}
       {showToast && (
         <ToastNotification
           message={toastMessage}

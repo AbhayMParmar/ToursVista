@@ -8,13 +8,6 @@ dotenv.config();
 
 const app = express();
 
-// Debug logging
-console.log('🔧 Environment Check:', {
-  NODE_ENV: process.env.NODE_ENV,
-  JWT_SECRET_SET: !!process.env.JWT_SECRET,
-  MONGODB_URI_SET: !!process.env.MONGODB_URI,
-  PORT: process.env.PORT
-});
 
 // Middleware - Simplified CORS for now
 app.use(cors({
@@ -26,40 +19,34 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
 
 // Database Connection with better error handling
 const connectDB = async () => {
   try {
     const atlasURI = process.env.MONGODB_URI;
-    
+
     if (!atlasURI) {
       console.error('❌ ERROR: MONGODB_URI is not set in environment variables');
       console.log('⚠️  Please set MONGODB_URI in Render environment variables');
       console.log('📚 Format: mongodb+srv://username:password@cluster.mongodb.net/database');
       return false;
     }
-    
-    console.log('🔗 Attempting MongoDB connection...');
-    
+
+
     await mongoose.connect(atlasURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
-    
-    console.log('✅ MongoDB Atlas connected successfully!');
-    
+
+    console.log('✅ MongoDB connected successfully!');
+
     // Initialize default data
     await initializeDefaultData();
-    
+
     return true;
-    
+
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
     console.log('⚠️  Please check your MONGODB_URI in Render environment variables');
@@ -73,7 +60,7 @@ const initializeDefaultData = async () => {
   try {
     const User = require('./models/User');
     const Tour = require('./models/Tour');
-    
+
     // Check if admin user exists
     const adminExists = await User.findOne({ email: 'admin@tourvista.com' });
     if (!adminExists) {
@@ -81,7 +68,7 @@ const initializeDefaultData = async () => {
       const bcrypt = require('bcryptjs');
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash('Admin@123', salt);
-      
+
       const adminUser = new User({
         name: 'Administrator',
         email: 'admin@tourvista.com',
@@ -89,13 +76,13 @@ const initializeDefaultData = async () => {
         password: hashedPassword,
         role: 'admin'
       });
-      
+
       await adminUser.save();
       console.log('✅ Admin user created: admin@tourvista.com / Admin@123');
     } else {
       console.log('✅ Admin user already exists');
     }
-    
+
     // Check if default tours exist
     const tourCount = await Tour.countDocuments();
     if (tourCount === 0) {
@@ -124,7 +111,7 @@ const initializeDefaultData = async () => {
           isActive: true
         }
       ];
-      
+
       await Tour.insertMany(defaultTours);
       console.log('✅ Default tours created');
     } else {
@@ -140,7 +127,7 @@ app.get('/api/health', async (req, res) => {
   try {
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     const status = dbStatus === 'connected' ? 200 : 503;
-    
+
     res.status(status).json({
       success: dbStatus === 'connected',
       status: dbStatus === 'connected' ? 'healthy' : 'unhealthy',
@@ -171,9 +158,9 @@ app.get('/api/debug', (req, res) => {
     },
     database: {
       state: mongoose.connection.readyState,
-      stateText: mongoose.connection.readyState === 1 ? 'connected' : 
-                 mongoose.connection.readyState === 2 ? 'connecting' :
-                 mongoose.connection.readyState === 3 ? 'disconnecting' : 'disconnected'
+      stateText: mongoose.connection.readyState === 1 ? 'connected' :
+        mongoose.connection.readyState === 2 ? 'connecting' :
+          mongoose.connection.readyState === 3 ? 'disconnecting' : 'disconnected'
     },
     server: {
       uptime: process.uptime(),
@@ -186,7 +173,7 @@ app.get('/api/debug', (req, res) => {
 app.post('/api/test-login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (email === 'test@test.com' && password === 'test123') {
       // Simple test token without JWT_SECRET dependency
       const jwt = require('jsonwebtoken');
@@ -195,7 +182,7 @@ app.post('/api/test-login', async (req, res) => {
         process.env.JWT_SECRET || 'test-fallback-secret',
         { expiresIn: '1h' }
       );
-      
+
       return res.json({
         success: true,
         message: 'Test login successful',
@@ -203,7 +190,7 @@ app.post('/api/test-login', async (req, res) => {
         user: { email, name: 'Test User' }
       });
     }
-    
+
     res.status(401).json({
       success: false,
       message: 'Invalid test credentials'
@@ -269,7 +256,7 @@ app.use((err, req, res, next) => {
     method: req.method,
     body: req.body
   });
-  
+
   res.status(500).json({
     success: false,
     message: 'Internal server error',
@@ -281,21 +268,20 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  console.log('🚀 Starting TourVista server...');
-  
+
   // Connect to database
   const dbConnected = await connectDB();
-  
+
   if (!dbConnected && process.env.NODE_ENV === 'production') {
     console.error('❌ Fatal: Database connection failed in production');
     process.exit(1);
   }
-  
+
   app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`🌐 Health Check: ${process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`}/api/health`);
-    console.log(`🔑 JWT Secret configured: ${!!process.env.JWT_SECRET}`);
-    console.log(`📊 Database connected: ${dbConnected ? 'Yes' : 'No'}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Health Check: ${process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`}/api/health`);
+    console.log(`JWT Secret configured: ${!!process.env.JWT_SECRET}`);
+    console.log(`Database connected: ${dbConnected ? 'Yes' : 'No'}`);
   });
 };
 

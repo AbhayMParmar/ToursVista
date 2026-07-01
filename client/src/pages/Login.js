@@ -19,9 +19,6 @@ const Toast = ({ message, type, onClose }) => {
         {type === 'success' ? '✓' : '✕'}
       </div>
       <div className="auth-toast-content">
-        <div className="auth-toast-title">
-          {type === 'success' ? 'Success!' : 'Error!'}
-        </div>
         <div className="auth-toast-message">{message}</div>
       </div>
       <button className="auth-toast-close" onClick={onClose}>×</button>
@@ -150,7 +147,7 @@ const Login = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        timeout: 10000
+        timeout: 60000
       });
 
       if (res.data.success) {
@@ -172,42 +169,46 @@ const Login = () => {
         addToast(res.data.message || 'Login failed', 'error');
       }
     } catch (err) {
-      if (err.code === 'ECONNABORTED') {
-        addToast('Request timeout. Please try again.', 'error');
-      } else if (err.response) {
+      const fallbackUrl = 'https://tours-travels-server-6mm7.onrender.com/api/auth/login';
+      const isTimeout = err.code === 'ECONNABORTED';
+
+      if (err.response) {
         addToast(err.response.data?.message || `Error: ${err.response.status}`, 'error');
-      } else if (err.request) {
-        const fallbackUrl = 'https://tours-travels-server-6mm7.onrender.com/api/auth/login';
-        if (getApiBaseUrl() !== fallbackUrl) {
-          try {
-            const fallbackRes = await axios.post(
-              fallbackUrl,
-              { email, password },
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-                },
-                withCredentials: false
-              }
-            );
-            
-            if (fallbackRes.data.success) {
-              localStorage.setItem('token', fallbackRes.data.token);
-              localStorage.setItem('user', JSON.stringify(fallbackRes.data.user));
-              addToast('Login successful! Redirecting to Dashboard...', 'success');
-              setTimeout(() => {
-                navigate('/dashboard');
-              }, 1500);
+      } else if ((err.request || isTimeout) && getApiBaseUrl() !== fallbackUrl) {
+        try {
+          addToast('Primary server busy. Trying fallback server...', 'info');
+          const fallbackRes = await axios.post(
+            fallbackUrl,
+            { email, password },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              timeout: 60000,
+              withCredentials: false
             }
-          } catch (fallbackErr) {
-            handleFallbackError(fallbackErr);
+          );
+          
+          if (fallbackRes.data.success) {
+            localStorage.setItem('token', fallbackRes.data.token);
+            localStorage.setItem('user', JSON.stringify(fallbackRes.data.user));
+            addToast('Login successful! Redirecting to Dashboard...', 'success');
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 1500);
+          } else {
+            addToast(fallbackRes.data.message || 'Login failed', 'error');
           }
+        } catch (fallbackErr) {
+          handleFallbackError(fallbackErr);
+        }
+      } else {
+        if (isTimeout) {
+          addToast('Request timeout. Please try again.', 'error');
         } else {
           handleFallbackError(err);
         }
-      } else {
-        addToast('Login failed. Please check your credentials and try again.', 'error');
       }
       console.error('Login error:', err);
     } finally {
@@ -227,7 +228,7 @@ const Login = () => {
 
   return (
     <div className="auth-page">
-      {/* UPDATED: Toast Container at Top Center */}
+      {/* UPDATED: Toast Container at Top Center with Swipe Down Animation */}
       <div className="auth-toast-container">
         {toasts.map(toast => (
           <Toast
